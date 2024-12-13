@@ -11,12 +11,16 @@ header {
     padding: 1rem 0;
 }
 
+
 #court-container {
     position: relative;
     width: 100%;
-    height: 500px;
+    max-width: 800px; /* Set a maximum width for larger screens */
+    margin: 0 auto; /* Center the container horizontally */
+    aspect-ratio: 2 / 1; /* Maintain a 2:1 aspect ratio */
     background-color: white;
     border: 2px solid rgb(216, 216, 216);
+    overflow: hidden; /* Prevent draggable elements from overflowing */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -24,27 +28,17 @@ header {
 
 #canvas-wrapper {
     position: relative;
-    width: 500px;
-    height: 250px;
-    margin: 20px auto; /* Use margin to center the wrapper */
-    background-color: transparent; /* Remove background color */
-    border: 2px solid black; /* Border around the entire court diagram */
-    padding: 0; /* Remove padding completely */
+    width: 90%; /* Make the rectangle responsive */
+    height: 90%; /* Maintain the size within the container */
+    border: 2px solid black; /* Add a border to the rectangle */
     box-sizing: border-box;
-}
-
-#court-canvas {
-    display: block;
-    margin: auto;
-    background-color: transparent; /* Ensure transparent background */
-    border: none; /* Remove any default border */
 }
 
 .draggable {
     position: absolute;
-    z-index: 10; /* Ensure draggable items are on top of the SVG */
-    width: 40px; /* Set a consistent width */
-    height: 40px; /* Set a consistent height */
+    z-index: 10;
+    width: 5%; /* Set width relative to container */
+    height: 5%; /* Set height relative to container */
     cursor: move;
 }
 

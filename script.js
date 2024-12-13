@@ -5,9 +5,6 @@ const equipmentTextarea = document.getElementById("equipment-textarea");
 const objectiveTextarea = document.getElementById("objective-textarea");
 const exportPdfBtn = document.getElementById("export-pdf-btn");
 const courtContainer = document.getElementById("court-container");
-const basketballButton = document.getElementById("load-basketball-court");
-const volleyballButton = document.getElementById("load-volleyball-court");
-const soccerButton = document.getElementById("load-soccer-field");
 
 // Export to PDF
 exportPdfBtn.addEventListener("click", () => {
@@ -127,29 +124,12 @@ document.getElementById("add-cone").addEventListener("click", () => {
 
 // Clear Court
 document.getElementById("clear-court").addEventListener("click", () => {
-    courtContainer.innerHTML = ""; // Clears all items
-    drawCourt(); // Redraws the court
+    // Select all draggable elements inside the court-container
+    const draggableItems = document.querySelectorAll("#court-container .draggable");
+
+    // Remove each draggable element
+    draggableItems.forEach((item) => item.remove());
 });
-
-// Draw the basketball court on the canvas
-function drawCourt() {
-    const canvas = document.getElementById("court-canvas");
-    const ctx = canvas.getContext("2d");
-
-    // Clear the canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Draw boundary lines
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 4;
-    ctx.strokeRect(0, 0, canvas.width, canvas.height);
-
-    // Draw center line
-    ctx.beginPath();
-    ctx.moveTo(canvas.width / 2, 0);
-    ctx.lineTo(canvas.width / 2, canvas.height);
-    ctx.stroke();
-}
 
 // Call drawCourt on page load
 window.addEventListener("DOMContentLoaded", drawCourt);
