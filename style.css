@@ -1,3 +1,4 @@
+/* General Body Styling */
 body {
     font-family: Arial, sans-serif;
     background-color: #f9f9f9;
@@ -5,13 +6,15 @@ body {
     padding: 0;
 }
 
+/* Header Styling */
 header {
     background-color: #ff6464;
     color: white;
     padding: 1rem 0;
+    text-align: center; /* Center-align header content */
 }
 
-
+/* Court Container Styling */
 #court-container {
     position: relative;
     width: 100%;
@@ -24,36 +27,71 @@ header {
     display: flex;
     justify-content: center;
     align-items: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add subtle shadow for better visual appeal */
+    border-radius: 8px; /* Slight rounding for a modern look */
 }
 
+/* Canvas Wrapper Styling */
 #canvas-wrapper {
     position: relative;
     width: 90%; /* Make the rectangle responsive */
     height: 90%; /* Maintain the size within the container */
     border: 2px solid black; /* Add a border to the rectangle */
     box-sizing: border-box;
+    background-color: #ffffff; /* Light gray background for contrast */
+    border-radius: 4px; /* Match rounded edges with the container */
 }
 
+/* Draggable Items Styling */
 .draggable {
-    position: absolute;
+    position: absolute; /* Required for moving elements */
     z-index: 10;
     width: 5%; /* Set width relative to container */
     height: 5%; /* Set height relative to container */
-    cursor: move;
+    cursor: move; /* Indicate draggable functionality */
+    display: flex;
+    justify-content: center;
+    align-items: center; /* Center content inside the draggable item */
+    border-radius: 50%; /* Default circular shape */
+    transition: transform 0.1s; /* Smooth effect when dragged */
 }
 
+/* Draggable Item Hover Effect */
+.draggable:hover {
+    transform: scale(1.1); /* Slightly enlarge on hover for feedback */
+}
+
+/* Draggable SVG Styling */
 .draggable svg {
     width: 100%;
     height: 100%;
 }
 
+/* Specific Styling for Cone */
 .draggable.cone {
-    background-color: orange; /* Set color for cone */
+    background-color: orange; /* Orange color for cones */
     text-align: center;
-    line-height: 40px;
-    font-size: 14px;
-    color: white;
-    border-radius: 50%; /* Make cone circular */
-    border: 2px solid black;
+    font-size: 14px; /* Set font size for text inside cone */
+    color: white; /* Text color for contrast */
+    line-height: 40px; /* Ensure text aligns vertically */
+}
+
+/* Responsive Design Adjustments */
+@media (max-width: 768px) {
+    #court-container {
+        max-width: 100%; /* Use full width on smaller screens */
+        aspect-ratio: 2 / 1; /* Maintain aspect ratio */
+        border: 1px solid rgb(200, 200, 200); /* Slightly lighter border */
+    }
+
+    .draggable {
+        width: 7%; /* Slightly larger draggable items on smaller screens */
+        height: 7%;
+    }
+
+    #canvas-wrapper {
+        width: 95%;
+        height: 95%; /* Adjust for better fit */
+    }
 }
 
