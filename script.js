@@ -65,34 +65,49 @@ exportPdfBtn.addEventListener("click", () => {
 function makeDraggable(element) {
     let offsetX, offsetY;
 
-    element.addEventListener("mousedown", (e) => {
-        offsetX = e.clientX - element.offsetLeft;
-        offsetY = e.clientY - element.offsetTop;
+    // Start drag (for both mouse and touch)
+    const startDrag = (e) => {
+        const event = e.type === "mousedown" ? e : e.touches[0]; // Use touch point if on touch device
+        offsetX = event.clientX - element.offsetLeft;
+        offsetY = event.clientY - element.offsetTop;
         element.classList.add("dragging");
 
+        // Add event listeners for movement and stop
         document.addEventListener("mousemove", moveElement);
+        document.addEventListener("touchmove", moveElement, { passive: false }); // Prevent default scrolling
         document.addEventListener("mouseup", stopDragging);
-    });
+        document.addEventListener("touchend", stopDragging);
+    };
 
-    function moveElement(e) {
-        const rect = courtContainer.getBoundingClientRect();
+    // Move element (for both mouse and touch)
+    const moveElement = (e) => {
+        const event = e.type === "mousemove" ? e : e.touches[0];
+        const container = document.getElementById("court-container");
+        const rect = container.getBoundingClientRect();
 
-        let x = e.clientX - offsetX;
-        let y = e.clientY - offsetY;
+        let x = event.clientX - offsetX;
+        let y = event.clientY - offsetY;
 
-        // Prevent dragging outside the court
+        // Prevent dragging outside the container
         x = Math.max(0, Math.min(x, rect.width - element.offsetWidth));
         y = Math.max(0, Math.min(y, rect.height - element.offsetHeight));
 
         element.style.left = x + "px";
         element.style.top = y + "px";
-    }
+    };
 
-    function stopDragging() {
+    // Stop dragging (for both mouse and touch)
+    const stopDragging = () => {
         document.removeEventListener("mousemove", moveElement);
+        document.removeEventListener("touchmove", moveElement);
         document.removeEventListener("mouseup", stopDragging);
+        document.removeEventListener("touchend", stopDragging);
         element.classList.remove("dragging");
-    }
+    };
+
+    // Add event listeners for starting drag
+    element.addEventListener("mousedown", startDrag);
+    element.addEventListener("touchstart", startDrag, { passive: false }); // Prevent default scrolling
 }
 
 // Add Players
