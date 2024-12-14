@@ -110,32 +110,26 @@ function makeDraggable(element) {
     element.addEventListener("touchstart", startDrag, { passive: false }); // Prevent default scrolling
 }
 
-// Add Players
-document.getElementById("add-player").addEventListener("click", () => {
-    const player = document.createElement("div");
-    player.className = "draggable player";
-    player.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#4caf50">
-            <circle cx="12" cy="7" r="4" />
-            <path d="M12 11c-3.33 0-6 2.69-6 6v3h12v-3c0-3.31-2.67-6-6-6z" />
-        </svg>
-    `;
-    player.style.left = "50px";
-    player.style.top = "50px";
-    courtContainer.appendChild(player);
-    makeDraggable(player);
-});
-
-// Add Cones
+// Add Cone
 document.getElementById("add-cone").addEventListener("click", () => {
     const cone = document.createElement("div");
     cone.className = "draggable cone";
-    cone.textContent = "C"; // Cone label
     cone.style.left = "100px";
     cone.style.top = "100px";
+
+    // Add the image to the cone
+    const img = document.createElement("img");
+    img.src = "assets/svg/low_profile_cone.svg"; // Path to your image
+    img.alt = "Low Profile Cone";
+    img.style.width = "100%"; // Make the image scale to the cone size
+    img.style.height = "100%"; // Maintain aspect ratio
+    img.style.borderRadius = "50%"; // Optional: Keep the image circular
+
+    cone.appendChild(img);
     courtContainer.appendChild(cone);
-    makeDraggable(cone);
+    makeDraggable(cone); // Make it draggable
 });
+
 
 // Clear Court
 document.getElementById("clear-court").addEventListener("click", () => {

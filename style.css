@@ -67,13 +67,19 @@ header {
     height: 100%;
 }
 
-/* Specific Styling for Cone */
-.draggable.cone {
-    background-color: orange; /* Orange color for cones */
-    text-align: center;
-    font-size: 14px; /* Set font size for text inside cone */
-    color: white; /* Text color for contrast */
-    line-height: 40px; /* Ensure text aligns vertically */
+.draggable {
+    position: absolute;
+    z-index: 10;
+    cursor: move;
+    width: 40px; /* Default size */
+    height: 40px;
+}
+
+.draggable img {
+    width: 100%; /* Fit container */
+    height: 100%;
+    object-fit: contain; /* Prevent distortion */
+    pointer-events: none; /* Ensure the container is draggable, not the image */
 }
 
 /* Responsive Design Adjustments */
