@@ -110,26 +110,45 @@ function makeDraggable(element) {
     element.addEventListener("touchstart", startDrag, { passive: false }); // Prevent default scrolling
 }
 
-// Add Cone
+// Add Players
+document.getElementById("add-player").addEventListener("click", () => {
+    const player = document.createElement("div");
+    player.className = "draggable player";
+    player.style.left = "100px";
+    player.style.top = "100px";
+
+    // Add the player SVG or an image to the container
+    const img = document.createElement("img");
+    img.src = "assets/svg/player_icon.svg"; // Replace with the correct path to your player icon
+    img.alt = "Player Icon";
+    img.style.width = "100%";
+    img.style.height = "100%";
+    img.style.pointerEvents = "none"; // Make sure only the container is draggable
+
+    player.appendChild(img);
+    courtContainer.appendChild(player);
+    makeDraggable(player); // Make it draggable
+});
+
+// Add Cones
 document.getElementById("add-cone").addEventListener("click", () => {
     const cone = document.createElement("div");
     cone.className = "draggable cone";
     cone.style.left = "100px";
     cone.style.top = "100px";
 
-    // Add the image to the cone
+    // Add the cone SVG or an image to the container
     const img = document.createElement("img");
-    img.src = "assets/svg/low_profile_cone.svg"; // Path to your image
+    img.src = "assets/svg/low_profile_cone.svg"; // Replace with the correct path to your cone image
     img.alt = "Low Profile Cone";
-    img.style.width = "100%"; // Make the image scale to the cone size
-    img.style.height = "100%"; // Maintain aspect ratio
-    img.style.borderRadius = "50%"; // Optional: Keep the image circular
+    img.style.width = "100%";
+    img.style.height = "100%";
+    img.style.pointerEvents = "none";
 
     cone.appendChild(img);
     courtContainer.appendChild(cone);
     makeDraggable(cone); // Make it draggable
 });
-
 
 // Clear Court
 document.getElementById("clear-court").addEventListener("click", () => {
@@ -139,6 +158,3 @@ document.getElementById("clear-court").addEventListener("click", () => {
     // Remove each draggable element
     draggableItems.forEach((item) => item.remove());
 });
-
-// Call drawCourt on page load
-window.addEventListener("DOMContentLoaded", drawCourt);
