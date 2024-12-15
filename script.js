@@ -12,11 +12,12 @@ exportPdfBtn.addEventListener("click", () => {
 
     const doc = new jsPDF("p", "mm", "a4");
 
-    // Add Game Name
+    // Game Name
+    const gameName = gameNameInput.value.trim() || "PE_Planner_Diagram";
     doc.setFontSize(16);
     doc.text("Game Name:", 10, 10);
     doc.setFontSize(14);
-    doc.text(gameNameInput.value || "N/A", 10, 20);
+    doc.text(gameName, 10, 20);
 
     // Add Notes
     doc.setFontSize(16);
@@ -57,7 +58,27 @@ exportPdfBtn.addEventListener("click", () => {
         // Add the image to the PDF (preserving aspect ratio)
         doc.addImage(imgData, "PNG", 10, objectiveStartY + 30, pageWidth, imgHeight);
 
-        doc.save("PE_Planner.pdf");
+        // Add Footer: plain text + hyperlink
+        const footerText = "created with ";
+        const hyperlinkText = "peplanner.com";
+        const footerX = 150;
+        const footerY = 287;
+
+        // Regular text (black)
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0); // Black color
+        doc.text(footerText, footerX, footerY);
+
+        // Hyperlink text (blue)
+        const textWidth = doc.getTextWidth(footerText); // Get the width of "created with "
+        doc.setTextColor(0, 0, 255); // Blue for hyperlink
+        doc.textWithLink(hyperlinkText, footerX + textWidth, footerY, {
+        url: "https://peplanner.com",
+        });
+
+        // Save the PDF with Game Name as the filename
+        const filename = gameName.replace(/\s+/g, "_") + ".pdf"; // Replace spaces with underscores
+        doc.save(filename);
     });
 });
 
