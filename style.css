@@ -134,3 +134,7 @@ header {
     transform: scale(1.1);
     border-color: #ff6464;
 }
+
+.selected {
+    border: 2px dashed blue; /* Highlight selected icons */
+}
