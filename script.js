@@ -110,45 +110,124 @@ function makeDraggable(element) {
     element.addEventListener("touchstart", startDrag, { passive: false }); // Prevent default scrolling
 }
 
-// Add Players
-document.getElementById("add-player").addEventListener("click", () => {
+// Add Player Icon
+document.getElementById("icon-player").addEventListener("click", () => {
     const player = document.createElement("div");
     player.className = "draggable player";
     player.style.left = "100px";
     player.style.top = "100px";
 
-    // Add the player SVG or an image to the container
+    // Add the Player SVG image
     const img = document.createElement("img");
-    img.src = "assets/svg/player_icon.svg"; // Replace with the correct path to your player icon
-    img.alt = "Player Icon";
-    img.style.width = "100%";
-    img.style.height = "100%";
-    img.style.pointerEvents = "none"; // Make sure only the container is draggable
+    img.src = "assets/svg/player_icon.svg"; // Path to your Player SVG
+    img.alt = "Player";
+    img.style.width = "40px";
+    img.style.height = "40px";
+    img.style.pointerEvents = "none"; // Ensures the image doesn't interfere with dragging
 
     player.appendChild(img);
     courtContainer.appendChild(player);
     makeDraggable(player); // Make it draggable
 });
 
-// Add Cones
-document.getElementById("add-cone").addEventListener("click", () => {
+// Add Cone Icon
+document.getElementById("icon-cone").addEventListener("click", () => {
     const cone = document.createElement("div");
     cone.className = "draggable cone";
     cone.style.left = "100px";
     cone.style.top = "100px";
 
-    // Add the cone SVG or an image to the container
+    // Add the Cone SVG image
     const img = document.createElement("img");
-    img.src = "assets/svg/low_profile_cone.svg"; // Replace with the correct path to your cone image
-    img.alt = "Low Profile Cone";
-    img.style.width = "100%";
-    img.style.height = "100%";
+    img.src = "assets/svg/low_profile_cone.svg"; // Path to your Cone SVG
+    img.alt = "Cone";
+    img.style.width = "40px";
+    img.style.height = "40px";
     img.style.pointerEvents = "none";
 
     cone.appendChild(img);
     courtContainer.appendChild(cone);
     makeDraggable(cone); // Make it draggable
 });
+
+// Add Circle Icon
+document.getElementById("icon-circle").addEventListener("click", () => {
+    const circle = document.createElement("div");
+    circle.className = "draggable circle";
+    circle.style.left = "100px";
+    circle.style.top = "100px";
+
+    const img = document.createElement("img");
+    img.src = "assets/svg/circle_icon.svg"; // Path to your Circle SVG
+    img.alt = "Circle";
+    img.style.width = "40px";
+    img.style.height = "40px";
+    img.style.pointerEvents = "none"; // Prevent interfering with dragging
+
+    circle.appendChild(img);
+    courtContainer.appendChild(circle);
+    makeDraggable(circle);
+});
+
+// Add Square Icon
+document.getElementById("icon-square").addEventListener("click", () => {
+    const square = document.createElement("div");
+    square.className = "draggable square";
+    square.style.left = "100px";
+    square.style.top = "100px";
+
+    const img = document.createElement("img");
+    img.src = "assets/svg/square_icon.svg"; // Path to your Square SVG
+    img.alt = "Square";
+    img.style.width = "40px";
+    img.style.height = "40px";
+    img.style.pointerEvents = "none";
+
+    square.appendChild(img);
+    courtContainer.appendChild(square);
+    makeDraggable(square);
+});
+
+// Add Up Arrow Icon
+document.getElementById("icon-arrow-up").addEventListener("click", () => {
+    addDraggableIcon("assets/svg/arrow_sm_up_icon.svg", "Up Arrow");
+});
+
+// Add Down Arrow Icon
+document.getElementById("icon-arrow-down").addEventListener("click", () => {
+    addDraggableIcon("assets/svg/arrow_sm_down_icon.svg", "Down Arrow");
+});
+
+// Add Left Arrow Icon
+document.getElementById("icon-arrow-left").addEventListener("click", () => {
+    addDraggableIcon("assets/svg/arrow_sm_left_icon.svg", "Left Arrow");
+});
+
+// Add Right Arrow Icon
+document.getElementById("icon-arrow-right").addEventListener("click", () => {
+    addDraggableIcon("assets/svg/arrow_sm_right_icon.svg", "Right Arrow");
+});
+
+// Reusable function to add draggable icons
+function addDraggableIcon(imagePath, altText) {
+    const icon = document.createElement("div");
+    icon.className = "draggable arrow";
+    icon.style.left = "100px";
+    icon.style.top = "100px";
+
+    // Add the image to the icon
+    const img = document.createElement("img");
+    img.src = imagePath;
+    img.alt = altText;
+    img.style.width = "40px";
+    img.style.height = "40px";
+    img.style.pointerEvents = "none"; // Ensure only the container is draggable
+
+    icon.appendChild(img);
+    courtContainer.appendChild(icon);
+    makeDraggable(icon);
+}
+
 
 // Clear Court
 document.getElementById("clear-court").addEventListener("click", () => {
