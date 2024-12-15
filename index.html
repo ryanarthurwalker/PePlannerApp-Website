@@ -18,6 +18,7 @@
             <ul class="flex justify-center space-x-6">
                 <li><a href="index.html" class="text-blue-500 hover:underline">Home</a></li>
                 <li><a href="about.html" class="text-blue-500 hover:underline">About</a></li>
+                <li><a href="FAQ.html" class="text-blue-500 hover:underline">FAQ</a></li>
                 <li><a href="feedback.html" class="text-blue-500 hover:underline">Feedback</a></li>
             </ul>
         </nav>
@@ -45,7 +46,12 @@
 
         <!-- Export to PDF Section -->
         <section class="text-center">
-            <button id="export-pdf-btn" class="px-6 py-3 bg-red-500 text-white rounded">Export to PDF</button>
+            <button id="undo-btn" class="px-4 py-2 bg-yellow-500 text-white rounded">Undo</button>
+            <button id="redo-btn" class="px-4 py-2 bg-blue-500 text-white rounded">Redo</button>
+            <button id="clear-court" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+                Clear Court
+            </button>
+            <button id="export-pdf-btn" class="px-6 py-3 bg-green-500 text-white rounded">Export to PDF</button>
         </section>
 
         <!-- Court Section -->
@@ -54,6 +60,10 @@
             <div id="court-container">
                 <div id="canvas-wrapper"></div>
             </div>
+            <button id="save-json-btn" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                Save as JSON
+            </button>
+            <input type="file" id="load-json-btn" accept=".json" class="mt-4">
     <!-- Instructions for Adding Icons -->
 <p class="text-lg text-center mt-4 mb-2 font-semibold">
     Click on an icon(s) below to add to the diagram
