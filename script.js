@@ -10,35 +10,37 @@ const courtContainer = document.getElementById("court-container");
 let history = [];
 let redoStack = [];
 
-// Save the current state of the court
+// Save and Reinitialize State Functions
 function saveState() {
     history.push(courtContainer.innerHTML);
     redoStack = [];
 }
 
-// Reinitialize draggable items after undo/redo
 function reinitializeDraggable() {
     courtContainer.querySelectorAll(".draggable").forEach((item) => makeDraggable(item));
 }
 
-// Undo/Redo Functionality
-document.getElementById("undo-btn").addEventListener("click", () => {
+// Undo/Redo Functions
+function undoAction() {
     if (history.length > 0) {
         redoStack.push(courtContainer.innerHTML);
         courtContainer.innerHTML = history.pop();
         reinitializeDraggable();
     }
-});
+}
 
-document.getElementById("redo-btn").addEventListener("click", () => {
+function redoAction() {
     if (redoStack.length > 0) {
         history.push(courtContainer.innerHTML);
         courtContainer.innerHTML = redoStack.pop();
         reinitializeDraggable();
     }
-});
+}
 
-// Export to PDF
+document.getElementById("undo-btn").addEventListener("click", undoAction);
+document.getElementById("redo-btn").addEventListener("click", redoAction);
+
+// Export to PDF Functionality
 exportPdfBtn.addEventListener("click", () => {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF("p", "mm", "a4");
@@ -70,21 +72,22 @@ exportPdfBtn.addEventListener("click", () => {
     });
 });
 
-// Make an element draggable
+// Draggable Functionality
 function makeDraggable(element) {
     let offsetX, offsetY;
 
     element.addEventListener("mousedown", (e) => {
         if (element.closest(".group") && !element.classList.contains("group")) return; // Ignore children in group
-        e.preventDefault();
 
         const startX = e.clientX, startY = e.clientY;
         offsetX = element.offsetLeft;
         offsetY = element.offsetTop;
 
         const moveElement = (e) => {
-            element.style.left = `${offsetX + e.clientX - startX}px`;
-            element.style.top = `${offsetY + e.clientY - startY}px`;
+            const deltaX = e.clientX - startX;
+            const deltaY = e.clientY - startY;
+            element.style.left = `${offsetX + deltaX}px`;
+            element.style.top = `${offsetY + deltaY}px`;
         };
 
         const stopDragging = () => {
@@ -98,7 +101,7 @@ function makeDraggable(element) {
     });
 }
 
-// Generic function to add draggable icons
+// Generic Icon Addition
 function addDraggableIcon(iconId, imagePath) {
     document.getElementById(iconId).addEventListener("click", () => {
         const icon = document.createElement("div");
@@ -121,7 +124,7 @@ function addDraggableIcon(iconId, imagePath) {
 }
 
 // Add Icons
-const icons = [
+[
     { id: "icon-player", path: "assets/svg/player_icon.svg" },
     { id: "icon-cone", path: "assets/svg/low_profile_cone.svg" },
     { id: "icon-circle", path: "assets/svg/circle_icon.svg" },
@@ -130,16 +133,15 @@ const icons = [
     { id: "icon-arrow-down", path: "assets/svg/arrow_sm_down_icon.svg" },
     { id: "icon-arrow-left", path: "assets/svg/arrow_sm_left_icon.svg" },
     { id: "icon-arrow-right", path: "assets/svg/arrow_sm_right_icon.svg" }
-];
+].forEach((icon) => addDraggableIcon(icon.id, icon.path));
 
-icons.forEach((icon) => addDraggableIcon(icon.id, icon.path));
-
-// Grouping and Ungrouping
+// Selection and Grouping
 let selectedIcons = [];
 
 document.addEventListener("click", (e) => {
     const target = e.target.closest(".draggable");
     if (!target) return;
+
     e.shiftKey || e.ctrlKey || e.metaKey
         ? toggleSelection(target)
         : (clearSelection(), toggleSelection(target));
@@ -206,39 +208,63 @@ document.getElementById("ungroup-btn").addEventListener("click", () => {
     saveState();
 });
 
-// Align selected icons horizontally with even spacing
+// Clear Court
+document.getElementById("clear-court").addEventListener("click", () => {
+    saveState();
+    courtContainer.querySelectorAll(".draggable").forEach((item) => item.remove());
+});
+
+// Align Horizontally
 document.getElementById("align-horizontal-btn").addEventListener("click", () => {
-    if (selectedIcons.length < 2) return alert("Select at least two icons to align!");
+    if (selectedIcons.length < 2) {
+        alert("Select at least two icons to align!");
+        return;
+    }
 
-    // Sort icons by their current left position
-    selectedIcons.sort((a, b) => a.offsetLeft - b.offsetLeft);
+    // Get the top-most position
+    const top = Math.min(...selectedIcons.map((icon) => {
+        const parent = icon.closest(".group") || icon;
+        return parent.offsetTop;
+    }));
 
-    const top = Math.min(...selectedIcons.map((icon) => icon.offsetTop)); // Align to top-most
-    const spacing = 50; // Set horizontal spacing (adjust as needed)
+    // Set a fixed spacing value between icons
+    const spacing = 40; // Adjust for desired spacing between items
 
-    // Align each icon in a line horizontally
+    // Sort icons by left position and align
+    selectedIcons.sort((a, b) => (a.closest(".group") || a).offsetLeft - (b.closest(".group") || b).offsetLeft);
+
     selectedIcons.forEach((icon, index) => {
-        icon.style.top = `${top}px`;
-        icon.style.left = `${100 + index * spacing}px`; // Increment left position by spacing
+        const parent = icon.closest(".group") || icon;
+        parent.style.top = `${top}px`;
+        parent.style.left = `${index * spacing}px`; // Set horizontal spacing
     });
 
     saveState();
 });
 
-// Align selected icons vertically with even spacing
+// Align Vertically
 document.getElementById("align-vertical-btn").addEventListener("click", () => {
-    if (selectedIcons.length < 2) return alert("Select at least two icons to align!");
+    if (selectedIcons.length < 2) {
+        alert("Select at least two icons to align!");
+        return;
+    }
 
-    // Sort icons by their current top position
-    selectedIcons.sort((a, b) => a.offsetTop - b.offsetTop);
+    // Get the left-most position
+    const left = Math.min(...selectedIcons.map((icon) => {
+        const parent = icon.closest(".group") || icon;
+        return parent.offsetLeft;
+    }));
 
-    const left = Math.min(...selectedIcons.map((icon) => icon.offsetLeft)); // Align to left-most
-    const spacing = 50; // Set vertical spacing (adjust as needed)
+    // Set a fixed spacing value between icons
+    const spacing = 40; // Adjust for desired spacing between items
 
-    // Align each icon in a line vertically
+    // Sort icons by top position and align
+    selectedIcons.sort((a, b) => (a.closest(".group") || a).offsetTop - (b.closest(".group") || b).offsetTop);
+
     selectedIcons.forEach((icon, index) => {
-        icon.style.left = `${left}px`;
-        icon.style.top = `${100 + index * spacing}px`; // Increment top position by spacing
+        const parent = icon.closest(".group") || icon;
+        parent.style.left = `${left}px`;
+        parent.style.top = `${index * spacing}px`; // Set vertical spacing
     });
 
     saveState();

@@ -136,5 +136,7 @@ header {
 }
 
 .selected {
-    border: 2px dashed blue; /* Highlight selected icons */
+    outline: 2px dashed blue; /* Non-intrusive dashed outline */
+    background-color: rgba(0, 0, 255, 0.1); /* Light blue highlight */
+    border: none; /* Ensure no conflicting borders */
 }
