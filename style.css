@@ -11,103 +11,82 @@ header {
     background-color: #ff6464;
     color: white;
     padding: 1rem 0;
-    text-align: center; /* Center-align header content */
+    text-align: center;
 }
 
 /* Court Container Styling */
 #court-container {
-    position: relative;
+    position: relative; /* Stacking context for children */
     width: 100%;
-    max-width: 800px; /* Set a maximum width for larger screens */
-    margin: 0 auto; /* Center the container horizontally */
-    aspect-ratio: 2 / 1; /* Maintain a 2:1 aspect ratio */
+    max-width: 800px;
+    margin: 0 auto;
+    aspect-ratio: 2 / 1;
     background-color: white;
     border: 2px solid rgb(216, 216, 216);
-    overflow: hidden; /* Prevent draggable elements from overflowing */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add subtle shadow for better visual appeal */
-    border-radius: 8px; /* Slight rounding for a modern look */
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    z-index: 1; /* Default stacking */
 }
 
-/* Canvas Wrapper Styling */
+/* Grid Background Styling - Applied Dynamically */
+#court-container.grid-active {
+    background-size: 20px 20px; /* Default grid size */
+    background-image: 
+        linear-gradient(to right, #ddd 1px, transparent 1px),
+        linear-gradient(to bottom, #ddd 1px, transparent 1px);
+    z-index: 5; /* Grid above the rectangle */
+}
+
+/* Canvas Wrapper Styling (Rectangle) */
 #canvas-wrapper {
-    position: relative;
-    width: 90%; /* Make the rectangle responsive */
-    height: 90%; /* Maintain the size within the container */
-    border: 2px solid black; /* Add a border to the rectangle */
+    position: absolute;
+    top: 5%;
+    left: 5%;
+    width: 90%;
+    height: 90%;
+    border: 2px solid black;
     box-sizing: border-box;
-    background-color: #ffffff; /* Light gray background for contrast */
-    border-radius: 4px; /* Match rounded edges with the container */
+    border-radius: 4px;
+    z-index: 1; /* Rectangle stays below grid */
 }
 
 /* Draggable Items Styling */
 .draggable {
-    position: absolute; /* Required for moving elements */
-    z-index: 10;
-    width: 5%; /* Set width relative to container */
-    height: 5%; /* Set height relative to container */
-    cursor: move; /* Indicate draggable functionality */
+    position: absolute;
+    z-index: 10; /* Ensure draggable items are above grid */
+    width: 40px; /* Default size for draggable items */
+    height: 40px;
+    cursor: move;
     display: flex;
     justify-content: center;
-    align-items: center; /* Center content inside the draggable item */
-    border-radius: 50%; /* Default circular shape */
-    transition: transform 0.1s; /* Smooth effect when dragged */
-}
-
-/* Draggable Item Hover Effect */
-.draggable:hover {
-    transform: scale(1.1); /* Slightly enlarge on hover for feedback */
-}
-
-/* Draggable SVG Styling */
-.draggable svg {
-    width: 100%;
-    height: 100%;
-}
-
-.draggable {
-    position: absolute;
-    z-index: 10;
-    cursor: move;
-    width: 40px; /* Default size */
-    height: 40px;
+    align-items: center;
+    border-radius: 50%; /* Optional circular styling */
+    transition: transform 0.1s; /* Smooth feedback effect */
 }
 
 .draggable img {
-    width: 100%; /* Fit container */
+    width: 100%;
     height: 100%;
     object-fit: contain; /* Prevent distortion */
-    pointer-events: none; /* Ensure the container is draggable, not the image */
+    pointer-events: none; /* Allow dragging of parent container */
 }
 
-/* Responsive Design Adjustments */
-@media (max-width: 768px) {
-    #court-container {
-        max-width: 100%; /* Use full width on smaller screens */
-        aspect-ratio: 2 / 1; /* Maintain aspect ratio */
-        border: 1px solid rgb(200, 200, 200); /* Slightly lighter border */
-    }
-
-    .draggable {
-        width: 7%; /* Slightly larger draggable items on smaller screens */
-        height: 7%;
-    }
-
-    #canvas-wrapper {
-        width: 95%;
-        height: 95%; /* Adjust for better fit */
-    }
+.draggable:hover {
+    transform: scale(1.1); /* Slightly enlarge on hover */
 }
 
+/* Icon Selection Row */
 #icon-selection p {
     font-size: 1.1rem;
     font-weight: bold;
     color: #333;
+    text-align: center;
+    margin: 1rem 0;
 }
 
-#icon-row {
+#icon-row,
+#icon-row-2 {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -115,21 +94,21 @@ header {
     margin-top: 10px;
 }
 
-/* Standardize Icon Container Sizes */
 .icon {
-    width: 50px; /* Set desired width */
-    height: 50px; /* Set desired height */
+    width: 50px; /* Standardized size for all icons */
+    height: 50px;
     cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
+    border: 2px solid transparent;
+    transition: transform 0.2s, border-color 0.2s;
 }
 
-/* Standardize Image Sizes within Icons */
 .icon img {
-    width: 100%; /* Make image fit the container */
-    height: 100%; /* Maintain aspect ratio */
-    object-fit: contain; /* Prevent distortion */
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Keep images proportional */
 }
 
 .icon:hover {
@@ -138,12 +117,82 @@ header {
 }
 
 .selected {
-    outline: 2px dashed blue; /* Non-intrusive dashed outline */
-    background-color: rgba(0, 0, 255, 0.1); /* Light blue highlight */
-    border: none; /* Ensure no conflicting borders */
+    outline: 2px dashed blue;
+    background-color: rgba(0, 0, 255, 0.1);
 }
 
-#icon-row-2 {
-    margin-top: 10px;
-    gap: 15px; /* Adjust gap between icons */
+/* Responsive Design Adjustments */
+@media (max-width: 768px) {
+    #court-container {
+        max-width: 100%;
+        aspect-ratio: 2 / 1;
+        border: 1px solid rgb(200, 200, 200);
+    }
+
+    .draggable {
+        width: 7%;
+        height: 7%;
+    }
+
+    #canvas-wrapper {
+        width: 95%;
+        height: 95%;
+    }
+
+    .icon {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+/* Buttons Styling */
+button {
+    cursor: pointer;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    filter: brightness(0.9);
+}
+
+/* Specific Button Colors */
+button#undo-btn {
+    background-color: #fbbf24;
+    color: white;
+}
+
+button#redo-btn {
+    background-color: #3b82f6;
+    color: white;
+}
+
+button#clear-court {
+    background-color: #ef4444;
+    color: white;
+}
+
+button#export-pdf-btn {
+    background-color: #22c55e;
+    color: white;
+}
+
+button#toggle-grid-btn {
+    background-color: #6b7280;
+    color: white;
+}
+
+/* Grid Control Panel */
+#grid-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 1rem;
+}
+
+#grid-controls label {
+    font-weight: bold;
 }

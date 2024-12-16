@@ -63,17 +63,42 @@
             <button id="export-pdf-btn" class="px-6 py-3 bg-green-500 text-white rounded">Export to PDF</button>
         </section>
 
-        <!-- Court Section -->
+<!-- Court Section -->
 <section id="court-section" class="mb-6">
-            <h2 class="text-xl font-semibold mb-2">Court Diagram</h2>
-            <div id="court-container">
-                <div id="canvas-wrapper"></div>
-            </div>
-            <button id="save-json-btn" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                Save as JSON
-            </button>
-            <input type="file" id="load-json-btn" accept=".json" class="mt-4">
-    
+    <h2 class="text-xl font-semibold mb-2">Court Diagram</h2>
+
+    <!-- Court Container with Grid Overlay and Rectangle -->
+    <div id="court-container">
+        <!-- Grid Overlay -->
+        <div id="grid-overlay"></div>
+
+        <!-- Rectangle (Canvas Wrapper) -->
+        <div id="canvas-wrapper"></div>
+    </div>
+
+    <!-- Grid Controls -->
+    <div id="grid-controls" class="flex justify-center gap-4 mt-4">
+        <button id="toggle-grid-btn" class="px-4 py-2 bg-gray-500 text-white rounded">
+            Enable Grid Snap
+        </button>
+        <label for="grid-size" class="font-bold">Grid Size:</label>
+        <select id="grid-size" class="p-1 border rounded">
+            <option value="10">10px</option>
+            <option value="20">20px</option>
+            <option value="40">40px</option>
+            <option value="60">60px</option>
+        </select>
+    </div>
+
+    <!-- Save and Load Buttons -->
+    <div class="mt-4">
+        <button id="save-json-btn" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+            Save as JSON
+        </button>
+        <input type="file" id="load-json-btn" accept=".json" class="mt-4">
+    </div>
+</section>
+
 <div class="mt-4 space-x-2">
     <button id="group-btn" class="px-4 py-2 bg-blue-500 text-white rounded">Group</button>
     <button id="ungroup-btn" class="px-4 py-2 bg-yellow-500 text-white rounded">Ungroup</button>
