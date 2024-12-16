@@ -346,3 +346,126 @@ elements.alignVerticalBtn.addEventListener("click", () => {
 
     saveState();
 });
+
+function exportAsJSON() {
+    const gameName = elements.gameNameInput.value.trim() || "court_diagram";
+
+    // Collect rectangle (court-wrapper) data
+    const rectangle = elements.courtContainer.querySelector("#canvas-wrapper");
+    const rectangleData = {
+        type: "rectangle",
+        left: rectangle.offsetLeft,
+        top: rectangle.offsetTop,
+        width: rectangle.offsetWidth,
+        height: rectangle.offsetHeight,
+        backgroundColor: rectangle.style.backgroundColor || "transparent",
+        borderColor: rectangle.style.borderColor || "black",
+        borderWidth: rectangle.style.borderWidth || "2px",
+    };
+
+    // Collect draggable icons data
+    const iconsData = [...elements.courtContainer.querySelectorAll(".draggable")].map((icon) => {
+        const rect = icon.getBoundingClientRect();
+        const parentRect = elements.courtContainer.getBoundingClientRect();
+
+        return {
+            type: "icon",
+            id: icon.dataset.id || null,
+            left: rect.left - parentRect.left,
+            top: rect.top - parentRect.top,
+            width: icon.style.width || `${rect.width}px`,
+            height: icon.style.height || `${rect.height}px`,
+            image: icon.querySelector("img")?.src || null,
+        };
+    });
+
+    // Combine all data into one JSON object
+    const data = {
+        gameName,
+        quickNotes: elements.notesTextarea.value.trim(),
+        equipment: elements.equipmentTextarea.value.trim(),
+        objective: elements.objectiveTextarea.value.trim(),
+        rectangle: rectangleData, // Add the rectangle data
+        icons: iconsData,
+    };
+
+    // Save as JSON file
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `${gameName.replace(/\s+/g, "_")}.json`;
+    link.click();
+}
+
+document.getElementById("save-json-btn").addEventListener("click", exportAsJSON);
+
+
+function uploadJSON(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const data = JSON.parse(e.target.result);
+
+        // Restore text fields
+        elements.gameNameInput.value = data.gameName || "Unnamed Game";
+        elements.notesTextarea.value = data.quickNotes || "";
+        elements.equipmentTextarea.value = data.equipment || "";
+        elements.objectiveTextarea.value = data.objective || "";
+
+        // Clear existing court diagram
+        elements.courtContainer.innerHTML = "";
+
+        // Reconstruct rectangle (court-wrapper)
+        const rectangleData = data.rectangle;
+        if (rectangleData) {
+            const rectangle = document.createElement("div");
+            rectangle.id = "canvas-wrapper";
+            Object.assign(rectangle.style, {
+                position: "absolute",
+                left: `${rectangleData.left}px`,
+                top: `${rectangleData.top}px`,
+                width: `${rectangleData.width}px`,
+                height: `${rectangleData.height}px`,
+                backgroundColor: rectangleData.backgroundColor || "transparent",
+                borderColor: rectangleData.borderColor || "black",
+                borderWidth: rectangleData.borderWidth || "2px",
+                borderStyle: "solid",
+            });
+            elements.courtContainer.appendChild(rectangle);
+        }
+
+        // Reconstruct draggable icons
+        data.icons.forEach((iconData) => {
+            const icon = document.createElement("div");
+            icon.className = "draggable";
+            Object.assign(icon.style, {
+                position: "absolute",
+                left: `${iconData.left}px`,
+                top: `${iconData.top}px`,
+                width: iconData.width,
+                height: iconData.height,
+            });
+
+            if (iconData.image) {
+                const img = document.createElement("img");
+                img.src = iconData.image;
+                img.style.width = "100%";
+                img.style.height = "100%";
+                img.style.objectFit = "contain";
+                icon.appendChild(img);
+            }
+
+            elements.courtContainer.appendChild(icon);
+            makeDraggable(icon);
+        });
+
+        saveState(); // Save the restored state
+    };
+
+    reader.readAsText(file);
+}
+
+document.getElementById("load-json-btn").addEventListener("change", uploadJSON);
