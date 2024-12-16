@@ -186,3 +186,163 @@ elements.clearBtn.addEventListener("click", () => {
     saveState();
     elements.courtContainer.innerHTML = "";
 });
+
+// === Grouping and Ungrouping ===
+elements.groupBtn.addEventListener("click", () => {
+    if (selectedIcons.length < 2) {
+        alert("Select at least two icons to group!");
+        return;
+    }
+
+    const group = document.createElement("div");
+    group.className = "draggable group";
+    Object.assign(group.style, {
+        position: "absolute",
+        border: "2px dashed blue" // Visual indicator for grouping
+    });
+
+    // Calculate group bounds
+    const bounds = getGroupBounds(selectedIcons);
+    Object.assign(group.style, {
+        left: `${bounds.left}px`,
+        top: `${bounds.top}px`,
+        width: `${bounds.width}px`,
+        height: `${bounds.height}px`
+    });
+
+    // Move selected icons into the group
+    selectedIcons.forEach((icon) => {
+        const xOffset = icon.offsetLeft - bounds.left;
+        const yOffset = icon.offsetTop - bounds.top;
+        Object.assign(icon.style, {
+            left: `${xOffset}px`,
+            top: `${yOffset}px`,
+            pointerEvents: "none" // Disable interactions with individual items
+        });
+        group.appendChild(icon);
+    });
+
+    elements.courtContainer.appendChild(group);
+    makeDraggable(group); // Make the group draggable
+    clearSelection(); // Clear the selection state
+    saveState(); // Save the state
+});
+
+elements.ungroupBtn.addEventListener("click", () => {
+    const groups = elements.courtContainer.querySelectorAll(".group");
+    groups.forEach((group) => {
+        const children = [...group.children];
+        children.forEach((child) => {
+            Object.assign(child.style, {
+                left: `${group.offsetLeft + parseInt(child.style.left, 10)}px`,
+                top: `${group.offsetTop + parseInt(child.style.top, 10)}px`,
+                pointerEvents: "auto" // Re-enable interactions
+            });
+            elements.courtContainer.appendChild(child);
+            makeDraggable(child);
+        });
+        group.remove();
+    });
+    saveState();
+});
+
+// Utility function to calculate bounds for a group
+function getGroupBounds(icons) {
+    const left = Math.min(...icons.map((icon) => icon.offsetLeft));
+    const top = Math.min(...icons.map((icon) => icon.offsetTop));
+    const right = Math.max(...icons.map((icon) => icon.offsetLeft + icon.offsetWidth));
+    const bottom = Math.max(...icons.map((icon) => icon.offsetTop + icon.offsetHeight));
+    return { left, top, width: right - left, height: bottom - top };
+}
+
+// Selection management
+function toggleSelection(icon) {
+    icon.classList.toggle("selected");
+    if (selectedIcons.includes(icon)) {
+        selectedIcons = selectedIcons.filter((item) => item !== icon);
+    } else {
+        selectedIcons.push(icon);
+    }
+}
+
+function clearSelection() {
+    selectedIcons.forEach((icon) => icon.classList.remove("selected"));
+    selectedIcons = [];
+}
+
+// Add event listeners for selecting icons
+elements.courtContainer.addEventListener("click", (e) => {
+    const target = e.target.closest(".draggable");
+    if (!target || target.classList.contains("group")) return;
+
+    if (e.shiftKey || e.ctrlKey || e.metaKey) {
+        toggleSelection(target);
+    } else {
+        clearSelection();
+        toggleSelection(target);
+    }
+});
+
+// === Align Horizontally ===
+elements.alignHorizontalBtn.addEventListener("click", () => {
+    if (selectedIcons.length < 2) {
+        alert("Select at least two icons to align!");
+        return;
+    }
+
+    // Find the top-most position among selected items
+    const top = Math.min(...selectedIcons.map((icon) => {
+        const parent = icon.closest(".group") || icon;
+        return parent.offsetTop;
+    }));
+
+    // Calculate spacing between icons
+    const sortedIcons = selectedIcons.slice().sort((a, b) => {
+        const parentA = a.closest(".group") || a;
+        const parentB = b.closest(".group") || b;
+        return parentA.offsetLeft - parentB.offsetLeft;
+    });
+
+    const spacing = 40; // Fixed spacing value (adjustable)
+
+    // Align icons horizontally
+    sortedIcons.forEach((icon, index) => {
+        const parent = icon.closest(".group") || icon;
+        parent.style.top = `${top}px`;
+        parent.style.left = `${index * spacing}px`; // Set horizontal spacing
+    });
+
+    saveState();
+});
+
+// === Align Vertically ===
+elements.alignVerticalBtn.addEventListener("click", () => {
+    if (selectedIcons.length < 2) {
+        alert("Select at least two icons to align!");
+        return;
+    }
+
+    // Find the left-most position among selected items
+    const left = Math.min(...selectedIcons.map((icon) => {
+        const parent = icon.closest(".group") || icon;
+        return parent.offsetLeft;
+    }));
+
+    // Calculate spacing between icons
+    const sortedIcons = selectedIcons.slice().sort((a, b) => {
+        const parentA = a.closest(".group") || a;
+        const parentB = b.closest(".group") || b;
+        return parentA.offsetTop - parentB.offsetTop;
+    });
+
+    const spacing = 40; // Fixed spacing value (adjustable)
+
+    // Align icons vertically
+    sortedIcons.forEach((icon, index) => {
+        const parent = icon.closest(".group") || icon;
+        parent.style.left = `${left}px`;
+        parent.style.top = `${index * spacing}px`; // Set vertical spacing
+    });
+
+    saveState();
+});

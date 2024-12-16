@@ -196,3 +196,18 @@ button#toggle-grid-btn {
 #grid-controls label {
     font-weight: bold;
 }
+
+/* Highlight selected icons */
+.selected {
+    outline: 2px solid #4caf50; /* Green solid outline */
+    background-color: rgba(76, 175, 80, 0.2); /* Light green semi-transparent background */
+    border-radius: 8px; /* Add a subtle rounding to the corners */
+    box-shadow: 0 0 10px rgba(76, 175, 80, 0.6); /* Add a glowing effect */
+    transition: all 0.3s ease; /* Smooth transition for hover or selection changes */
+}
+
+/* Hover effect for selected icons */
+.selected:hover {
+    transform: scale(1.1); /* Slightly enlarge on hover for feedback */
+    box-shadow: 0 0 15px rgba(76, 175, 80, 0.8); /* Enhance glow effect on hover */
+}
