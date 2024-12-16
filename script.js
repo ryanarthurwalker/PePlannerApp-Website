@@ -67,12 +67,26 @@ elements.exportPdfBtn.addEventListener("click", () => {
     });
 });
 
-// === Dragging and Grid Snap ===
-function snapToGrid(element) {
-    const left = Math.round(parseInt(element.style.left) / gridSize) * gridSize;
-    const top = Math.round(parseInt(element.style.top) / gridSize) * gridSize;
-    element.style.left = `${left}px`;
-    element.style.top = `${top}px`;
+// Snap Elements to Grid (Center Alignment)
+function snapToGrid(element, gridSize) {
+    const rect = element.getBoundingClientRect(); // Get the dimensions of the element
+    const parentRect = element.parentElement.getBoundingClientRect(); // Get parent container dimensions
+
+    // Calculate the element's center relative to the parent
+    const centerX = rect.left - parentRect.left + rect.width / 2;
+    const centerY = rect.top - parentRect.top + rect.height / 2;
+
+    // Calculate the new snapped position
+    const snappedCenterX = Math.round(centerX / gridSize) * gridSize;
+    const snappedCenterY = Math.round(centerY / gridSize) * gridSize;
+
+    // Adjust the top-left position to align the center with the grid
+    const newLeft = snappedCenterX - rect.width / 2;
+    const newTop = snappedCenterY - rect.height / 2;
+
+    // Apply the new position
+    element.style.left = `${newLeft}px`;
+    element.style.top = `${newTop}px`;
 }
 
 function makeDraggable(element) {
@@ -91,8 +105,12 @@ function makeDraggable(element) {
         const stopDragging = () => {
             document.removeEventListener("mousemove", moveElement);
             document.removeEventListener("mouseup", stopDragging);
-            if (gridActive) snapToGrid(element);
-            saveState();
+        
+            if (gridActive) {
+                const gridSize = parseInt(elements.gridSizeSelect.value, 10);
+                snapToGrid(element, gridSize); // Snap to grid with center alignment
+            }
+            saveState(); // Save state for undo/redo
         };
 
         document.addEventListener("mousemove", moveElement);
