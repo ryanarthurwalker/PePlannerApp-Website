@@ -73,10 +73,7 @@
                 Save as JSON
             </button>
             <input type="file" id="load-json-btn" accept=".json" class="mt-4">
-    <!-- Instructions for Adding Icons -->
-<p class="text-lg text-center mt-4 mb-2 font-semibold">
-    Click on an icon(s) below to add to the diagram
-</p>
+    
 <div class="mt-4 space-x-2">
     <button id="group-btn" class="px-4 py-2 bg-blue-500 text-white rounded">Group</button>
     <button id="ungroup-btn" class="px-4 py-2 bg-yellow-500 text-white rounded">Ungroup</button>
@@ -84,8 +81,13 @@
     <button id="align-vertical-btn" class="px-4 py-2 bg-green-500 text-white rounded">Align Vertically</button>
 </div>
 
-<!-- Icons Row -->
-<div id="icon-row" class="flex justify-center space-x-6 mt-4">
+<!-- Instructions for Adding Icons -->
+<p class="text-lg text-center mt-4 mb-2 font-semibold">
+    Click on an icon(s) below to add to the diagram
+</p>
+
+<!-- Top Row -->
+<div id="icon-row" class="flex justify-center gap-4 mt-4">
     <!-- Player Icon -->
     <div id="icon-player" class="icon" title="Add Player">
         <img src="assets/svg/player_icon.svg" alt="Player Icon" class="w-10 h-10">
@@ -102,8 +104,8 @@
     <div id="icon-square" class="icon" title="Add Square">
         <img src="assets/svg/square_icon.svg" alt="Square Icon" class="w-10 h-10">
     </div>
-     <!-- Arrow Icons -->
-     <div id="icon-arrow-up" class="icon" title="Add Up Arrow">
+    <!-- Arrow Icons -->
+    <div id="icon-arrow-up" class="icon" title="Add Up Arrow">
         <img src="assets/svg/arrow_sm_up_icon.svg" alt="Up Arrow" class="w-10 h-10">
     </div>
     <div id="icon-arrow-down" class="icon" title="Add Down Arrow">
@@ -114,6 +116,36 @@
     </div>
     <div id="icon-arrow-right" class="icon" title="Add Right Arrow">
         <img src="assets/svg/arrow_sm_right_icon.svg" alt="Right Arrow" class="w-10 h-10">
+    </div>
+</div>
+
+    <!-- Second Row -->
+    <div id="icon-row-2" class="flex justify-center gap-4 mt-4">
+        <!-- New Sports Icons -->
+        <div id="icon-frisbee" class="icon" title="Add Frisbee">
+            <img src="assets/svg/frisbee_icon.svg" alt="Frisbee Icon">
+        </div>
+        <div id="icon-tennis" class="icon" title="Add Tennis Ball">
+            <img src="assets/svg/tennis_ball_icon.svg" alt="Tennis Ball Icon">
+        </div>
+        <div id="icon-badminton" class="icon" title="Add Badminton">
+            <img src="assets/svg/badminton_icon.svg" alt="Badminton Icon">
+        </div>
+        <div id="icon-volleyball" class="icon" title="Add Volleyball">
+            <img src="assets/svg/volleyball_icon.svg" alt="Volleyball Icon">
+        </div>
+        <div id="icon-baseball" class="icon" title="Add Baseball">
+            <img src="assets/svg/baseball_icon.svg" alt="Baseball Icon">
+        </div>
+        <div id="icon-football" class="icon" title="Add Football">
+            <img src="assets/svg/american_football_icon.svg" alt="American Football Icon">
+        </div>
+        <div id="icon-soccer" class="icon" title="Add Soccer Ball">
+            <img src="assets/svg/football_icon.svg" alt="Football Icon">
+        </div>
+        <div id="icon-basketball" class="icon" title="Add Basketball">
+            <img src="assets/svg/basketball_icon.svg" alt="Basketball Icon">
+        </div>
     </div>
 </div>
 </section>

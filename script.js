@@ -121,11 +121,14 @@ function addDraggableIcon(iconId, imagePath) {
         icon.style.position = "absolute";
         icon.style.left = "100px";
         icon.style.top = "100px";
+        icon.style.width = "30px"; // Standardize width
+        icon.style.height = "30px"; // Standardize height
 
         const img = document.createElement("img");
         img.src = imagePath;
-        img.style.width = "40px";
-        img.style.height = "40px";
+        img.style.width = "100%";
+        img.style.height = "100%";
+        img.style.objectFit = "contain"; // Prevent distortion
         img.style.pointerEvents = "none";
 
         icon.appendChild(img);
@@ -135,8 +138,9 @@ function addDraggableIcon(iconId, imagePath) {
     });
 }
 
-// Add Icons
+// Add Icons (First and Second Row)
 [
+    // First Row Icons
     { id: "icon-player", path: "assets/svg/player_icon.svg" },
     { id: "icon-cone", path: "assets/svg/low_profile_cone.svg" },
     { id: "icon-circle", path: "assets/svg/circle_icon.svg" },
@@ -144,7 +148,17 @@ function addDraggableIcon(iconId, imagePath) {
     { id: "icon-arrow-up", path: "assets/svg/arrow_sm_up_icon.svg" },
     { id: "icon-arrow-down", path: "assets/svg/arrow_sm_down_icon.svg" },
     { id: "icon-arrow-left", path: "assets/svg/arrow_sm_left_icon.svg" },
-    { id: "icon-arrow-right", path: "assets/svg/arrow_sm_right_icon.svg" }
+    { id: "icon-arrow-right", path: "assets/svg/arrow_sm_right_icon.svg" },
+    
+    // Second Row Icons
+    { id: "icon-frisbee", path: "assets/svg/frisbee_icon.svg" },
+    { id: "icon-tennis", path: "assets/svg/tennis_ball_icon.svg" },
+    { id: "icon-badminton", path: "assets/svg/badminton_icon.svg" },
+    { id: "icon-volleyball", path: "assets/svg/volleyball_icon.svg" },
+    { id: "icon-baseball", path: "assets/svg/baseball_icon.svg" },
+    { id: "icon-football", path: "assets/svg/american_football_icon.svg" },
+    { id: "icon-soccer", path: "assets/svg/football_icon.svg" },
+    { id: "icon-basketball", path: "assets/svg/basketball_icon.svg" }
 ].forEach((icon) => addDraggableIcon(icon.id, icon.path));
 
 // Selection and Grouping
@@ -281,3 +295,4 @@ document.getElementById("align-vertical-btn").addEventListener("click", () => {
 
     saveState();
 });
+
