@@ -40,34 +40,46 @@ function redoAction() {
 document.getElementById("undo-btn").addEventListener("click", undoAction);
 document.getElementById("redo-btn").addEventListener("click", redoAction);
 
-// Export to PDF Functionality
 exportPdfBtn.addEventListener("click", () => {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF("p", "mm", "a4");
     const gameName = gameNameInput.value.trim() || "PE_Planner_Diagram";
 
+    // Function to add a bolded section header and its content
     const addSection = (title, content, startY) => {
+        doc.setFont("helvetica", "bold"); // Set font to bold for headers
         doc.setFontSize(16);
         doc.text(title, 10, startY);
+        
+        doc.setFont("helvetica", "normal"); // Reset font to normal for content
         doc.setFontSize(14);
         doc.text(content.trim() || "N/A", 10, startY + 10);
-        return startY + 20;
+        
+        return startY + 20; // Adjust for spacing
     };
 
-    let startY = addSection("Game Name:", gameName, 10);
+    // Start building the PDF
+    let startY = 10;
+    startY = addSection("Game Name:", gameName, startY);
     startY = addSection("Quick Notes:", notesTextarea.value, startY);
     startY = addSection("Equipment:", equipmentTextarea.value, startY);
     startY = addSection("Objective:", objectiveTextarea.value, startY);
 
+    // Add Court Diagram
     html2canvas(courtContainer).then((canvas) => {
         const imgData = canvas.toDataURL("image/png");
-        doc.addImage(imgData, "PNG", 10, startY, 190, (190 * canvas.height) / canvas.width);
+        const imgHeight = (190 * canvas.height) / canvas.width;
 
+        doc.addImage(imgData, "PNG", 10, startY, 190, imgHeight);
+
+        // Add Footer with Hyperlink
         const footerX = 150, footerY = 287;
         doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
         doc.text("created with ", footerX, footerY);
         doc.setTextColor(0, 0, 255);
         doc.textWithLink("peplanner.com", footerX + doc.getTextWidth("created with "), footerY, { url: "https://peplanner.com" });
+
         doc.save(`${gameName.replace(/\s+/g, "_")}.pdf`);
     });
 });
