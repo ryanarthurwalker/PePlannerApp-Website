@@ -4,6 +4,7 @@ const elements = {
     notesTextarea: document.getElementById("notes-textarea"),
     equipmentTextarea: document.getElementById("equipment-textarea"),
     objectiveTextarea: document.getElementById("objective-textarea"),
+    modificationsTextarea: document.getElementById("modifications-textarea"),
     exportPdfBtn: document.getElementById("export-pdf-btn"),
     courtContainer: document.getElementById("court-container"),
     undoBtn: document.getElementById("undo-btn"),
@@ -58,6 +59,8 @@ elements.exportPdfBtn.addEventListener("click", () => {
     y = addSection("Quick Notes:", elements.notesTextarea.value, y);
     y = addSection("Equipment:", elements.equipmentTextarea.value, y);
     y = addSection("Objective:", elements.objectiveTextarea.value, y);
+    y = addSection("Modifications:", elements.modificationsTextarea.value, y);
+    
 
     html2canvas(elements.courtContainer).then((canvas) => {
         doc.addImage(canvas.toDataURL("image/png"), "PNG", 10, y, 190, (canvas.height * 190) / canvas.width);
@@ -385,6 +388,7 @@ function exportAsJSON() {
         quickNotes: elements.notesTextarea.value.trim(),
         equipment: elements.equipmentTextarea.value.trim(),
         objective: elements.objectiveTextarea.value.trim(),
+        modifications: elements.modificationsTextarea.value,
         rectangle: rectangleData, // Add the rectangle data
         icons: iconsData,
     };
@@ -414,6 +418,8 @@ function uploadJSON(event) {
         elements.notesTextarea.value = data.quickNotes || "";
         elements.equipmentTextarea.value = data.equipment || "";
         elements.objectiveTextarea.value = data.objective || "";
+        elements.modificationsTextarea.value = data.modifications || ""; 
+        
 
         // Clear existing court diagram
         elements.courtContainer.innerHTML = "";
