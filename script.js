@@ -49,25 +49,53 @@ elements.exportPdfBtn.addEventListener("click", () => {
     const doc = new jsPDF("p", "mm", "a4");
 
     const addSection = (title, content, y) => {
-        doc.setFont("helvetica", "bold").setFontSize(16).text(title, 10, y);
-        doc.setFont("helvetica", "normal").setFontSize(14).text(content.trim() || "N/A", 10, y + 10);
-        return y + 20;
+        if (content.trim()) {
+            doc.setFont("helvetica", "bold").setFontSize(16).text(title, 10, y);
+            doc.setFont("helvetica", "normal").setFontSize(14).text(content.trim(), 10, y + 10);
+            return y + 20;
+        }
+        return y;
     };
 
     let y = 10;
-    y = addSection("Game Name:", elements.gameNameInput.value.trim(), y);
-    y = addSection("Quick Notes:", elements.notesTextarea.value, y);
-    y = addSection("Equipment:", elements.equipmentTextarea.value, y);
-    y = addSection("Objective:", elements.objectiveTextarea.value, y);
-    y = addSection("Modifications:", elements.modificationsTextarea.value, y);
-    
 
-    html2canvas(elements.courtContainer).then((canvas) => {
-        doc.addImage(canvas.toDataURL("image/png"), "PNG", 10, y, 190, (canvas.height * 190) / canvas.width);
-        doc.setFontSize(10).setTextColor(0, 0, 0).text("created with ", 150, 287);
-        doc.setTextColor(0, 0, 255).textWithLink("peplanner.com", 165, 287, { url: "https://peplanner.com" });
-        doc.save("PE_Planner_Diagram.pdf");
-    });
+    // Add sections only if content exists
+    y = addSection("Game Name:", elements.gameNameInput.value.trim(), y);
+    y = addSection("Quick Notes:", elements.notesTextarea.value.trim(), y);
+    y = addSection("Equipment:", elements.equipmentTextarea.value.trim(), y);
+    y = addSection("Objective:", elements.objectiveTextarea.value.trim(), y);
+    y = addSection("Modifications:", elements.modificationsTextarea.value.trim(), y);
+
+    const fileName = elements.gameNameInput.value.trim() || "PE_Planner_Diagram";
+
+    // Temporarily remove 'selected' class from all icons
+    const selectedElements = document.querySelectorAll(".selected");
+    selectedElements.forEach((el) => el.classList.remove("selected"));
+
+    // Export court diagram
+    if (elements.courtContainer.innerHTML.trim()) {
+        html2canvas(elements.courtContainer).then((canvas) => {
+            // Restore 'selected' class after capture
+            selectedElements.forEach((el) => el.classList.add("selected"));
+
+            // Add court diagram to PDF
+            doc.addImage(canvas.toDataURL("image/png"), "PNG", 10, y, 190, (canvas.height * 190) / canvas.width);
+
+            // Add footer
+            const footerText = "created with ";
+            const linkText = "peplanner.com";
+            doc.setFont("helvetica", "normal").setFontSize(10);
+
+            const textWidth = doc.getTextWidth(footerText);
+            const footerX = 150, footerY = 287;
+
+            doc.setTextColor(0, 0, 0).text(footerText, footerX, footerY);
+            doc.setTextColor(0, 0, 255).textWithLink(linkText, footerX + textWidth, footerY, { url: "https://peplanner.com" });
+
+            // Save PDF
+            doc.save(`${fileName.replace(/\s+/g, "_")}.pdf`);
+        });
+    }
 });
 
 // Snap Elements to Grid (Center Alignment)
