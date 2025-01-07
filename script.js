@@ -5,6 +5,18 @@ const stage = new Konva.Stage({
     height: 400,
 });
 
+// Background layer for white background
+const backgroundLayer = new Konva.Layer();
+const whiteBackground = new Konva.Rect({
+    x: 0,
+    y: 0,
+    width: stage.width(),
+    height: stage.height(),
+    fill: "#ffffff", // White background color
+});
+backgroundLayer.add(whiteBackground);
+stage.add(backgroundLayer);
+
 const layer = new Konva.Layer();
 stage.add(layer);
 
@@ -21,6 +33,10 @@ const elements = {
     clearCourtBtn: document.getElementById("clear-court-btn"),
     undoBtn: document.getElementById("undo-btn"),
     redoBtn: document.getElementById("redo-btn"),
+    addStepBtn: document.getElementById("add-step-btn"),
+    playStepsBtn: document.getElementById("play-steps-btn"),
+    exportVideoBtn: document.getElementById("export-video-btn"),
+    stepsList: document.getElementById("steps-list"),
 };
 
 // === Save State Function ===
@@ -44,6 +60,7 @@ document.querySelectorAll(".icon").forEach((iconElement) => {
                 height: 50,
                 draggable: true,
                 image: imageObj,
+                id: `icon-${Date.now()}`, // Unique ID for each icon
             });
 
             konvaIcon.on("dragend", saveState);
@@ -137,6 +154,156 @@ elements.redoBtn.addEventListener("click", () => {
         history.push(nextState);
         layer.destroyChildren();
         Konva.Node.create(nextState, layer);
+        layer.draw();
+    }
+});
+
+// === Step Data and State ===
+const steps = [];
+let currentStepIndex = 0;
+
+// === Add Step Function ===
+elements.addStepBtn.addEventListener("click", () => {
+    const icons = layer.find("Image").map((icon) => ({
+        iconId: icon.id(),
+        x: icon.x(),
+        y: icon.y(),
+    }));
+
+    const step = {
+        icons,
+        label: `Step ${steps.length + 1}`,
+    };
+
+    steps.push(step);
+    updateStepsUI();
+});
+
+function updateStepsUI() {
+    elements.stepsList.innerHTML = ""; // Clear existing list
+
+    steps.forEach((step, index) => {
+        const stepItem = document.createElement("div");
+        stepItem.textContent = `${step.label}`;
+        stepItem.className = "border-b p-1 cursor-pointer";
+
+        // Click handler to jump to step
+        stepItem.addEventListener("click", () => {
+            goToStep(index);
+        });
+
+        elements.stepsList.appendChild(stepItem);
+    });
+}
+
+function goToStep(stepIndex) {
+    const step = steps[stepIndex];
+    step.icons.forEach((savedIcon) => {
+        const icon = layer.findOne(`#${savedIcon.iconId}`);
+        if (icon) {
+            icon.position({ x: savedIcon.x, y: savedIcon.y });
+        }
+    });
+    layer.draw();
+}
+
+// === Play Steps Animation ===
+elements.playStepsBtn.addEventListener("click", () => {
+    if (steps.length === 0) {
+        alert("No steps recorded yet!");
+        return;
+    }
+
+    currentStepIndex = 0;
+    playSteps();
+});
+
+function playSteps() {
+    if (currentStepIndex >= steps.length) {
+        console.log("All steps completed!");
+        return;
+    }
+
+    const step = steps[currentStepIndex];
+    const animations = step.icons.map((savedIcon) => {
+        const icon = layer.findOne(`#${savedIcon.iconId}`);
+        if (icon) {
+            return new Promise((resolve) => {
+                icon.to({
+                    x: savedIcon.x,
+                    y: savedIcon.y,
+                    duration: 1,
+                    onFinish: resolve,
+                });
+            });
+        }
+    });
+
+    Promise.all(animations).then(() => {
+        currentStepIndex++;
+        playSteps();
+    });
+}
+
+// === Export Video Function ===
+elements.exportVideoBtn.addEventListener("click", () => {
+    if (steps.length === 0) {
+        alert("No steps to export!");
+        return;
+    }
+
+    const capturer = new CCapture({
+        format: "webm",
+        framerate: 30,
+        quality: 100,
+    });
+
+    currentStepIndex = 0;
+    stage.container().style.backgroundColor = "#ffffff";
+    capturer.start();
+
+    function renderFrame() {
+        if (currentStepIndex >= steps.length) {
+            capturer.stop();
+            capturer.save();
+            alert("Video export complete!");
+            return;
+        }
+
+        const step = steps[currentStepIndex];
+        const animations = step.icons.map((savedIcon) => {
+            const icon = layer.findOne(`#${savedIcon.iconId}`);
+            if (icon) {
+                return new Promise((resolve) => {
+                    icon.to({
+                        x: savedIcon.x,
+                        y: savedIcon.y,
+                        duration: 1,
+                        onUpdate: () => {
+                            const canvas = stage.toCanvas({ pixelRatio: 2 });
+                            capturer.capture(canvas);
+                        },
+                        onFinish: resolve,
+                    });
+                });
+            }
+        });
+
+        Promise.all(animations).then(() => {
+            currentStepIndex++;
+            renderFrame();
+        });
+    }
+
+    renderFrame();
+});
+
+// === Icon Selection Handling ===
+layer.on("click", (e) => {
+    layer.find(".selected").forEach((icon) => icon.stroke(null));
+    if (e.target instanceof Konva.Image) {
+        e.target.stroke("red").strokeWidth(2);
+        e.target.addName("selected");
         layer.draw();
     }
 });

@@ -52,6 +52,24 @@
             </div>
         </section>
 
+        <!-- Step Control Panel -->
+        <section class="mt-6">
+            <h3 class="text-lg font-semibold mb-2">Step-by-Step Movement</h3>
+            
+            <!-- Steps Display List -->
+            <div id="steps-list" class="mt-4 border p-4"></div>
+            
+            <!-- Instruction Text -->
+            <p class="text-sm text-gray-600 mt-2">Click on a step to return to its position.</p>
+            
+            <!-- Control Buttons -->
+            <div class="mt-4">
+                <button id="add-step-btn" class="px-4 py-2 bg-blue-500 text-white rounded">Add Step</button>
+                <button id="play-steps-btn" class="px-4 py-2 bg-green-500 text-white rounded">Play Steps</button>
+                <button id="export-video-btn" class="px-4 py-2 bg-purple-500 text-white rounded">Export Video</button>
+            </div>
+        </section>
+
         <!-- Control Buttons Section -->
         <section class="mt-6 text-center">
             <button id="export-pdf-btn" class="px-6 py-3 bg-green-500 text-white rounded">Export to PDF</button>
@@ -81,7 +99,7 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/konva@8.4.1/konva.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="./libs/CCapture.all.min.js"></script>
     <script src="script.js"></script>
 </body>
 
