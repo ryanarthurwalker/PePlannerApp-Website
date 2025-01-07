@@ -1,25 +1,34 @@
-<link rel="stylesheet" href="style.css">
-<script src="script.js" defer></script>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-HHTNJ107FR"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-HHTNJ107FR');
-</script>
+    <!-- Meta Information -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PE Planner</title>
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-HHTNJ107FR"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-HHTNJ107FR');
+    </script>
+
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/konva@8.4.3/konva.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+   
+
+    <!-- Internal Libraries -->
+    <script src="libs/CCapture.all.min.js"></script>
+
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="style.css">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 p-6">
+    <!-- Header Section -->
     <header class="text-center mb-4">
         <h1 class="text-2xl font-bold">PE Planner</h1>
         <!-- Navigation Bar -->
@@ -32,90 +41,91 @@
             </ul>
         </nav>
     </header>
+
+    <!-- Main Content -->
     <main class="max-w-2xl mx-auto">
+        <!-- Game Name Section -->
         <section id="game-section" class="mb-6">
             <h2 class="text-xl font-semibold mb-2">Game Name</h2>
             <input id="game-name-input" type="text" class="p-2 border rounded w-full mb-4" placeholder="Enter the game name">
         </section>
 
+        <!-- Objective Section -->
         <section id="objective-section" class="mb-6">
             <h2 class="text-xl font-semibold mb-2">Objective</h2>
             <textarea id="objective-textarea" class="p-2 border rounded w-full h-20" placeholder="Describe your objective here..."></textarea>
         </section>
-        
+
+        <!-- Quick Notes Section -->
         <section id="notes-section" class="mb-6">
             <h2 class="text-xl font-semibold mb-2">Quick Notes</h2>
             <textarea id="notes-textarea" class="p-2 border rounded w-full h-20" placeholder="Type your notes here..."></textarea>
         </section>
-        
+
+        <!-- Equipment Section -->
         <section id="equipment-section" class="mb-6">
             <h2 class="text-xl font-semibold mb-2">Equipment</h2>
             <textarea id="equipment-textarea" class="p-2 border rounded w-full h-20" placeholder="List your equipment here..."></textarea>
         </section>
-        
+
+        <!-- Modifications Section -->
         <section id="modifications-section" class="mb-6">
             <h2 class="text-xl font-semibold mb-2">Modifications</h2>
             <textarea id="modifications-textarea" class="p-2 border rounded w-full h-20" placeholder="List your modifications here..."></textarea>
         </section>
 
-        <!-- Export to PDF Section -->
-        <section class="text-center">
+        <!-- Export Section -->
+        <section class="text-center mb-6">
             <button id="undo-btn" class="px-4 py-2 bg-yellow-500 text-white rounded">Undo</button>
             <button id="redo-btn" class="px-4 py-2 bg-blue-500 text-white rounded">Redo</button>
-            <button id="clear-court" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
-                Clear Court
-            </button>
+            <button id="clear-court" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Clear Court</button>
             <button id="export-pdf-btn" class="px-6 py-3 bg-green-500 text-white rounded">Export to PDF</button>
         </section>
 
-<!-- Court Section -->
-<section id="court-section" class="mb-6">
-    <h2 class="text-xl font-semibold mb-2">Court Diagram</h2>
+        <!-- Step-by-Step Movement -->
+        <section id="steps-panel" class="mt-6">
+            <h3 class="text-lg font-semibold mb-2">Step-by-Step Movement</h3>
+            <div id="steps-list" class="border p-2 mb-2"></div>
+            <button id="add-step-btn" class="px-4 py-2 bg-blue-500 text-white rounded">Add Step</button>
+            <button id="play-steps-btn" class="px-4 py-2 bg-green-500 text-white rounded">Play Steps</button>
+            <button id="export-video-btn" class="px-4 py-2 bg-green-500 text-white rounded">Export Video</button>
+        </section>
 
-    <!-- Court Container with Grid Overlay and Rectangle -->
-    <div id="court-container">
-        <!-- Grid Overlay -->
-        <div id="grid-overlay"></div>
+        <!-- Court Diagram -->
+        <section id="court-section" class="mb-6">
+            <h2 class="text-xl font-semibold mb-2">Court Diagram</h2>
+            <div id="court-container"></div>
+                <div id="grid-overlay"></div>
+                <div id="canvas-wrapper"></div>
+            </div>
 
-        <!-- Rectangle (Canvas Wrapper) -->
-        <div id="canvas-wrapper"></div>
-    </div>
+            <!-- Grid Controls -->
+            <div class="flex justify-center gap-4 mt-4">
+                <button id="toggle-grid-btn" class="px-4 py-2 bg-gray-500 text-white rounded">Enable Grid Snap</button>
+                <label for="grid-size" class="font-bold">Grid Size:</label>
+                <select id="grid-size" class="p-1 border rounded">
+                    <option value="20">20px</option>
+                    <option value="40">40px</option>
+                    <option value="60">60px</option>
+                </select>
+            </div>
+        </section>
 
-    <!-- Grid Controls -->
-    <div id="grid-controls" class="flex justify-center gap-4 mt-4">
-        <button id="toggle-grid-btn" class="px-4 py-2 bg-gray-500 text-white rounded">
-            Enable Grid Snap
-        </button>
-        <label for="grid-size" class="font-bold">Grid Size:</label>
-        <select id="grid-size" class="p-1 border rounded">
-            <option value="20">20px</option>
-            <option value="40">40px</option>
-            <option value="60">60px</option>
-        </select>
-    </div>
+        <!-- Save and Load -->
+        <div class="text-center mt-4">
+            <button id="save-json-btn" class="px-4 py-2 bg-blue-500 text-white rounded">Save as JSON</button>
+            <input type="file" id="load-json-btn" accept=".json" class="mt-4">
+        </div>
 
-    <!-- Save and Load Buttons -->
-    <div class="mt-4">
-        <button id="save-json-btn" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-            Save as JSON
-        </button>
-        <input type="file" id="load-json-btn" accept=".json" class="mt-4">
-    </div>
-</section>
+        <!-- Grouping and Alignment -->
+        <div class="mt-4 space-x-2 text-center">
+            <button id="group-btn" class="px-4 py-2 bg-blue-500 text-white rounded">Group</button>
+            <button id="ungroup-btn" class="px-4 py-2 bg-yellow-500 text-white rounded">Ungroup</button>
+            <button id="align-horizontal-btn" class="px-4 py-2 bg-green-500 text-white rounded">Align Horizontally</button>
+            <button id="align-vertical-btn" class="px-4 py-2 bg-green-500 text-white rounded">Align Vertically</button>
+        </div>
 
-<div class="mt-4 space-x-2">
-    <button id="group-btn" class="px-4 py-2 bg-blue-500 text-white rounded">Group</button>
-    <button id="ungroup-btn" class="px-4 py-2 bg-yellow-500 text-white rounded">Ungroup</button>
-    <button id="align-horizontal-btn" class="px-4 py-2 bg-green-500 text-white rounded">Align Horizontally</button>
-    <button id="align-vertical-btn" class="px-4 py-2 bg-green-500 text-white rounded">Align Vertically</button>
-</div>
-
-<!-- Instructions for Adding Icons -->
-<p class="text-lg text-center mt-4 mb-2 font-semibold">
-    Click on an icon(s) below to add to the diagram
-</p>
-
-<!-- Top Row -->
+        <!-- Top Row -->
 <div id="icon-row" class="flex justify-center gap-4 mt-4">
     <!-- Player Icon -->
     <div id="icon-player" class="icon" title="Add Player">
@@ -175,14 +185,8 @@
         <div id="icon-basketball" class="icon" title="Add Basketball">
             <img src="assets/svg/basketball_icon.svg" alt="Basketball Icon">
         </div>
-    </div>
-</div>
-</section>
-    </main>
-</body>
-<img src="https://hits.dwyl.com/username/repo-name.svg" alt="Visitors" style="display: none;">
-<script src="script.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-</html>
 
+    <!-- Custom Script -->
+    <script src="script.js"></script>
+</body>
+</html>
