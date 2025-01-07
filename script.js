@@ -44,6 +44,7 @@ function redoAction() {
 }
 
 // === PDF Export ===
+// === PDF Export ===
 elements.exportPdfBtn.addEventListener("click", () => {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF("p", "mm", "a4");
@@ -51,15 +52,26 @@ elements.exportPdfBtn.addEventListener("click", () => {
     const addSection = (title, content, y) => {
         if (content.trim()) {
             doc.setFont("helvetica", "bold").setFontSize(16).text(title, 10, y);
-            doc.setFont("helvetica", "normal").setFontSize(14).text(content.trim(), 10, y + 10);
-            return y + 20;
+            const contentLines = doc.splitTextToSize(content.trim(), 180); // Wrap text to 180mm width
+            const lineHeight = 7; // Line height in mm
+            let currentY = y + 10;
+
+            contentLines.forEach((line) => {
+                if (currentY + lineHeight > 280) {
+                    doc.addPage();
+                    currentY = 20;
+                }
+                doc.setFont("helvetica", "normal").setFontSize(14).text(line, 10, currentY);
+                currentY += lineHeight;
+            });
+
+            return currentY + 10;
         }
         return y;
     };
 
     let y = 10;
 
-    // Add sections only if content exists
     y = addSection("Game Name:", elements.gameNameInput.value.trim(), y);
     y = addSection("Quick Notes:", elements.notesTextarea.value.trim(), y);
     y = addSection("Equipment:", elements.equipmentTextarea.value.trim(), y);
@@ -68,31 +80,24 @@ elements.exportPdfBtn.addEventListener("click", () => {
 
     const fileName = elements.gameNameInput.value.trim() || "PE_Planner_Diagram";
 
-    // Temporarily remove 'selected' class from all icons
     const selectedElements = document.querySelectorAll(".selected");
     selectedElements.forEach((el) => el.classList.remove("selected"));
 
-    // Export court diagram
     if (elements.courtContainer.innerHTML.trim()) {
-        html2canvas(elements.courtContainer).then((canvas) => {
-            // Restore 'selected' class after capture
+        html2canvas(elements.courtContainer, { backgroundColor: "#ffffff" }).then((canvas) => {
             selectedElements.forEach((el) => el.classList.add("selected"));
 
-            // Add court diagram to PDF
-            doc.addImage(canvas.toDataURL("image/png"), "PNG", 10, y, 190, (canvas.height * 190) / canvas.width);
+            const imgData = canvas.toDataURL("image/png");
+            const imgWidth = 190;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-            // Add footer
-            const footerText = "created with ";
-            const linkText = "peplanner.com";
-            doc.setFont("helvetica", "normal").setFontSize(10);
+            doc.addImage(imgData, "PNG", 10, y, imgWidth, imgHeight);
 
-            const textWidth = doc.getTextWidth(footerText);
-            const footerX = 150, footerY = 287;
+            // Static Footer Text
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            doc.text("Created with peplanner.com", 10, 287);
 
-            doc.setTextColor(0, 0, 0).text(footerText, footerX, footerY);
-            doc.setTextColor(0, 0, 255).textWithLink(linkText, footerX + textWidth, footerY, { url: "https://peplanner.com" });
-
-            // Save PDF
             doc.save(`${fileName.replace(/\s+/g, "_")}.pdf`);
         });
     }
