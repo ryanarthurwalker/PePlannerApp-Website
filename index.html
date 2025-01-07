@@ -1,192 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <!-- Meta Information -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PE Planner</title>
-
-    <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-HHTNJ107FR"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-HHTNJ107FR');
-    </script>
-
-    <!-- External Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/konva@8.4.3/konva.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
-   
-
-    <!-- Internal Libraries -->
-    <script src="libs/CCapture.all.min.js"></script>
-
-    <!-- Stylesheets -->
+    <title>PE Planner - Basic Structure</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
+
 <body class="bg-gray-100 p-6">
-    <!-- Header Section -->
     <header class="text-center mb-4">
         <h1 class="text-2xl font-bold">PE Planner</h1>
-        <!-- Navigation Bar -->
         <nav class="mt-4">
             <ul class="flex justify-center space-x-6">
                 <li><a href="index.html" class="text-blue-500 hover:underline">Home</a></li>
-                <li><a href="about.html" class="text-blue-500 hover:underline">About</a></li>
-                <li><a href="FAQ.html" class="text-blue-500 hover:underline">FAQ</a></li>
                 <li><a href="feedback.html" class="text-blue-500 hover:underline">Feedback</a></li>
+                <li><a href="about.html" class="text-blue-500 hover:underline">About</a></li>
+                <li><a href="faq.html" class="text-blue-500 hover:underline">FAQ</a></li>
             </ul>
         </nav>
     </header>
 
-    <!-- Main Content -->
     <main class="max-w-2xl mx-auto">
-        <!-- Game Name Section -->
-        <section id="game-section" class="mb-6">
-            <h2 class="text-xl font-semibold mb-2">Game Name</h2>
-            <input id="game-name-input" type="text" class="p-2 border rounded w-full mb-4" placeholder="Enter the game name">
+        <!-- Game Information Section -->
+        <section class="mb-6">
+            <h2 class="text-xl font-semibold mb-2">Game Information</h2>
+            <input id="game-name-input" type="text" class="p-2 border rounded w-full mb-4" placeholder="Enter Game Name">
         </section>
 
-        <!-- Objective Section -->
-        <section id="objective-section" class="mb-6">
+        <section class="mb-6">
             <h2 class="text-xl font-semibold mb-2">Objective</h2>
-            <textarea id="objective-textarea" class="p-2 border rounded w-full h-20" placeholder="Describe your objective here..."></textarea>
+            <textarea id="objective-textarea" class="p-2 border rounded w-full h-20" placeholder="Enter Objective..."></textarea>
         </section>
 
-        <!-- Quick Notes Section -->
-        <section id="notes-section" class="mb-6">
+        <section class="mb-6">
             <h2 class="text-xl font-semibold mb-2">Quick Notes</h2>
-            <textarea id="notes-textarea" class="p-2 border rounded w-full h-20" placeholder="Type your notes here..."></textarea>
+            <textarea id="notes-textarea" class="p-2 border rounded w-full h-20" placeholder="Enter Quick Notes..."></textarea>
         </section>
 
-        <!-- Equipment Section -->
-        <section id="equipment-section" class="mb-6">
+        <section class="mb-6">
             <h2 class="text-xl font-semibold mb-2">Equipment</h2>
-            <textarea id="equipment-textarea" class="p-2 border rounded w-full h-20" placeholder="List your equipment here..."></textarea>
+            <textarea id="equipment-textarea" class="p-2 border rounded w-full h-20" placeholder="Enter Equipment List..."></textarea>
         </section>
 
-        <!-- Modifications Section -->
-        <section id="modifications-section" class="mb-6">
-            <h2 class="text-xl font-semibold mb-2">Modifications</h2>
-            <textarea id="modifications-textarea" class="p-2 border rounded w-full h-20" placeholder="List your modifications here..."></textarea>
-        </section>
-
-        <!-- Export Section -->
-        <section class="text-center mb-6">
-            <button id="undo-btn" class="px-4 py-2 bg-yellow-500 text-white rounded">Undo</button>
-            <button id="redo-btn" class="px-4 py-2 bg-blue-500 text-white rounded">Redo</button>
-            <button id="clear-court" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Clear Court</button>
-            <button id="export-pdf-btn" class="px-6 py-3 bg-green-500 text-white rounded">Export to PDF</button>
-        </section>
-
-        <!-- Step-by-Step Movement -->
-        <section id="steps-panel" class="mt-6">
-            <h3 class="text-lg font-semibold mb-2">Step-by-Step Movement</h3>
-            <div id="steps-list" class="border p-2 mb-2"></div>
-            <button id="add-step-btn" class="px-4 py-2 bg-blue-500 text-white rounded">Add Step</button>
-            <button id="play-steps-btn" class="px-4 py-2 bg-green-500 text-white rounded">Play Steps</button>
-            <button id="export-video-btn" class="px-4 py-2 bg-green-500 text-white rounded">Export Video</button>
-        </section>
-
-        <!-- Court Diagram -->
+        <!-- Court Diagram Section -->
         <section id="court-section" class="mb-6">
             <h2 class="text-xl font-semibold mb-2">Court Diagram</h2>
-            <div id="court-container"></div>
-                <div id="grid-overlay"></div>
-                <div id="canvas-wrapper"></div>
-            </div>
-
-            <!-- Grid Controls -->
-            <div class="flex justify-center gap-4 mt-4">
-                <button id="toggle-grid-btn" class="px-4 py-2 bg-gray-500 text-white rounded">Enable Grid Snap</button>
-                <label for="grid-size" class="font-bold">Grid Size:</label>
-                <select id="grid-size" class="p-1 border rounded">
-                    <option value="20">20px</option>
-                    <option value="40">40px</option>
-                    <option value="60">60px</option>
-                </select>
+            <div id="court-container" class="border rounded shadow-lg">
+                <div id="konva-container"></div>
             </div>
         </section>
 
-        <!-- Save and Load -->
-        <div class="text-center mt-4">
-            <button id="save-json-btn" class="px-4 py-2 bg-blue-500 text-white rounded">Save as JSON</button>
-            <input type="file" id="load-json-btn" accept=".json" class="mt-4">
-        </div>
+        <!-- Control Buttons Section -->
+        <section class="mt-6 text-center">
+            <button id="export-pdf-btn" class="px-6 py-3 bg-green-500 text-white rounded">Export to PDF</button>
+            <button id="undo-btn" class="px-4 py-2 bg-yellow-500 text-white rounded">Undo</button>
+            <button id="redo-btn" class="px-4 py-2 bg-blue-500 text-white rounded">Redo</button>
+            <button id="clear-court-btn" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Clear Court</button>
+        </section>
 
-        <!-- Grouping and Alignment -->
-        <div class="mt-4 space-x-2 text-center">
-            <button id="group-btn" class="px-4 py-2 bg-blue-500 text-white rounded">Group</button>
-            <button id="ungroup-btn" class="px-4 py-2 bg-yellow-500 text-white rounded">Ungroup</button>
-            <button id="align-horizontal-btn" class="px-4 py-2 bg-green-500 text-white rounded">Align Horizontally</button>
-            <button id="align-vertical-btn" class="px-4 py-2 bg-green-500 text-white rounded">Align Vertically</button>
-        </div>
+        <!-- Icon Section -->
+        <section id="icon-section" class="mt-6">
+            <h3 class="text-lg font-semibold mb-2">Add Icons to Court</h3>
+            <div class="grid grid-cols-4 gap-4">
+                <div id="icon-player" class="icon"><img src="assets/svg/player_icon.svg" alt="Player Icon"></div>
+                <div id="icon-cone" class="icon"><img src="assets/svg/low_profile_cone.svg" alt="Cone Icon"></div>
+                <div id="icon-circle" class="icon"><img src="assets/svg/circle_icon.svg" alt="Circle Icon"></div>
+                <div id="icon-square" class="icon"><img src="assets/svg/square_icon.svg" alt="Square Icon"></div>
+                <div id="icon-arrow-up" class="icon"><img src="assets/svg/arrow_sm_up_icon.svg" alt="Up Arrow"></div>
+                <div id="icon-arrow-down" class="icon"><img src="assets/svg/arrow_sm_down_icon.svg" alt="Down Arrow"></div>
+                <div id="icon-arrow-left" class="icon"><img src="assets/svg/arrow_sm_left_icon.svg" alt="Left Arrow"></div>
+                <div id="icon-arrow-right" class="icon"><img src="assets/svg/arrow_sm_right_icon.svg" alt="Right Arrow"></div>
+                <div id="icon-frisbee" class="icon"><img src="assets/svg/frisbee_icon.svg" alt="Frisbee"></div>
+                <div id="icon-tennis" class="icon"><img src="assets/svg/tennis_ball_icon.svg" alt="Tennis Ball"></div>
+                <div id="icon-badminton" class="icon"><img src="assets/svg/badminton_icon.svg" alt="Badminton"></div>
+                <div id="icon-volleyball" class="icon"><img src="assets/svg/volleyball_icon.svg" alt="Volleyball"></div>
+            </div>
+        </section>
+    </main>
 
-        <!-- Top Row -->
-<div id="icon-row" class="flex justify-center gap-4 mt-4">
-    <!-- Player Icon -->
-    <div id="icon-player" class="icon" title="Add Player">
-        <img src="assets/svg/player_icon.svg" alt="Player Icon" class="w-10 h-10">
-    </div>
-    <!-- Cone Icon -->
-    <div id="icon-cone" class="icon" title="Add Cone">
-        <img src="assets/svg/low_profile_cone.svg" alt="Cone Icon" class="w-10 h-10">
-    </div>
-    <!-- Circle Icon -->
-    <div id="icon-circle" class="icon" title="Add Circle">
-        <img src="assets/svg/circle_icon.svg" alt="Circle Icon" class="w-10 h-10">
-    </div>
-    <!-- Square Icon -->
-    <div id="icon-square" class="icon" title="Add Square">
-        <img src="assets/svg/square_icon.svg" alt="Square Icon" class="w-10 h-10">
-    </div>
-    <!-- Arrow Icons -->
-    <div id="icon-arrow-up" class="icon" title="Add Up Arrow">
-        <img src="assets/svg/arrow_sm_up_icon.svg" alt="Up Arrow" class="w-10 h-10">
-    </div>
-    <div id="icon-arrow-down" class="icon" title="Add Down Arrow">
-        <img src="assets/svg/arrow_sm_down_icon.svg" alt="Down Arrow" class="w-10 h-10">
-    </div>
-    <div id="icon-arrow-left" class="icon" title="Add Left Arrow">
-        <img src="assets/svg/arrow_sm_left_icon.svg" alt="Left Arrow" class="w-10 h-10">
-    </div>
-    <div id="icon-arrow-right" class="icon" title="Add Right Arrow">
-        <img src="assets/svg/arrow_sm_right_icon.svg" alt="Right Arrow" class="w-10 h-10">
-    </div>
-</div>
-
-    <!-- Second Row -->
-    <div id="icon-row-2" class="flex justify-center gap-4 mt-4">
-        <!-- New Sports Icons -->
-        <div id="icon-frisbee" class="icon" title="Add Frisbee">
-            <img src="assets/svg/frisbee_icon.svg" alt="Frisbee Icon">
-        </div>
-        <div id="icon-tennis" class="icon" title="Add Tennis Ball">
-            <img src="assets/svg/tennis_ball_icon.svg" alt="Tennis Ball Icon">
-        </div>
-        <div id="icon-badminton" class="icon" title="Add Badminton">
-            <img src="assets/svg/badminton_icon.svg" alt="Badminton Icon">
-        </div>
-        <div id="icon-volleyball" class="icon" title="Add Volleyball">
-            <img src="assets/svg/volleyball_icon.svg" alt="Volleyball Icon">
-        </div>
-        <div id="icon-baseball" class="icon" title="Add Baseball">
-            <img src="assets/svg/baseball_icon.svg" alt="Baseball Icon">
-        </div>
-        <div id="icon-football" class="icon" title="Add Football">
-            <img src="assets/svg/american_football_icon.svg" alt="American Football Icon">
-        </div>
-        <div id="icon-soccer" class="icon" title="Add Soccer Ball">
-            <img src="assets/svg/football_icon.svg" alt="Football Icon">
-        </div>
-        <div id="icon-basketball" class="icon" title="Add Basketball">
-            <img src="assets/svg/basketball_icon.svg" alt="Basketball Icon">
-        </div>
-
-    <!-- Custom Script -->
+    <script src="https://cdn.jsdelivr.net/npm/konva@8.4.1/konva.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
     <script src="script.js"></script>
 </body>
+
 </html>
