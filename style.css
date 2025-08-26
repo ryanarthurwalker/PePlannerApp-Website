@@ -1,9 +1,12 @@
-#court-container { position: relative; width: min(1000px,95vw); height: calc(min(1000px,95vw)*0.75); margin:0 auto; border:2px solid #ddd; border-radius:12px; background:#fff; overflow:hidden; }
-#template-bg{position:absolute;inset:0;background-size:100% 100%;background-repeat:no-repeat;pointer-events:none;opacity:.9;}
-#grid-overlay{position:absolute;inset:0;background-image:linear-gradient(to right,rgba(0,0,0,.08)1px,transparent 1px),linear-gradient(to bottom,rgba(0,0,0,.08)1px,transparent 1px);background-size:20px 20px;pointer-events:none;}
-#canvas-wrapper{position:absolute;inset:0;touch-action:none;}
-.item{position:absolute;min-width:48px;min-height:32px;padding:6px 8px;border:1px dashed #bbb;background:rgba(0,0,0,.03);border-radius:8px;cursor:grab;user-select:none;transform-origin:center;}
-.item:active{cursor:grabbing;}
-.item.selected{outline:2px solid #4a90e2;z-index:1000;}
-.icon{border:1px solid #e5e7eb;border-radius:.5rem;padding:4px;background:#fff;}
-.icon:hover{background:#f9fafb;}
+#court-container{position:relative;width:min(1000px,95vw);height:calc(min(1000px,95vw)*0.75);margin:0 auto;border:2px solid #ddd;border-radius:12px;background:#fff;overflow:hidden}
+#template-bg{position:absolute;inset:0;background-size:100% 100%;background-repeat:no-repeat;pointer-events:none;opacity:.9}
+#grid-overlay{position:absolute;inset:0;background-image:linear-gradient(to right,rgba(0,0,0,.08)1px,transparent 1px),linear-gradient(to bottom,rgba(0,0,0,.08)1px,transparent 1px);background-size:20px 20px;pointer-events:none}
+#canvas-wrapper{position:absolute;inset:0;touch-action:none}
+.item{position:absolute;min-width:20px;min-height:20px;padding:2px;border:1px dashed #bbb;background:rgba(0,0,0,.02);border-radius:8px;cursor:grab;user-select:none;transform-origin:center}
+.item img{display:block;width:40px;height:40px}
+.item:active{cursor:grabbing}
+.item.selected{outline:2px solid #4a90e2;z-index:1000}
+.icon{border:1px solid #e5e7eb;border-radius:.5rem;padding:4px;background:#fff}
+.icon:hover{background:#f9fafb}
+.marquee{position:absolute;border:1px dashed #4a90e2;background:rgba(74,144,226,.15);pointer-events:none}
+.hidden{display:none}
