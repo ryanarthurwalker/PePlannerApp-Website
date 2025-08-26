@@ -1,16 +1,76 @@
-// --- State & elements ---
+// --- Court templates as SVG data URIs ---
+const TEMPLATES = {
+  blank: '',
+  basketball_half: `url('data:image/svg+xml;utf8,${encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+      <rect width="400" height="300" fill="#ffffff"/>
+      <rect x="10" y="10" width="380" height="280" fill="none" stroke="#d0d0d0" stroke-width="2"/>
+      <line x1="200" y1="10" x2="200" y2="290" stroke="#ff7f7f" stroke-width="2"/>
+      <circle cx="200" cy="150" r="45" fill="none" stroke="#ff7f7f" stroke-width="2"/>
+      <rect x="10" y="80" width="120" height="140" fill="none" stroke="#ff7f7f" stroke-width="2"/>
+      <circle cx="100" cy="150" r="7" fill="#ff7f7f"/>
+      <rect x="30" y="110" width="80" height="80" fill="none" stroke="#ff7f7f" stroke-width="2"/>
+    </svg>
+  `)}')`,
+  basketball_full: `url('data:image/svg+xml;utf8,${encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+      <rect width="400" height="300" fill="#ffffff"/>
+      <rect x="10" y="10" width="380" height="280" fill="none" stroke="#d0d0d0" stroke-width="2"/>
+      <line x1="200" y1="10" x2="200" y2="290" stroke="#ff7f7f" stroke-width="2"/>
+      <circle cx="200" cy="150" r="45" fill="none" stroke="#ff7f7f" stroke-width="2"/>
+      <rect x="10" y="80" width="120" height="140" fill="none" stroke="#ff7f7f" stroke-width="2"/>
+      <rect x="270" y="80" width="120" height="140" fill="none" stroke="#ff7f7f" stroke-width="2"/>
+      <circle cx="100" cy="150" r="7" fill="#ff7f7f"/>
+      <circle cx="300" cy="150" r="7" fill="#ff7f7f"/>
+      <rect x="30" y="110" width="80" height="80" fill="none" stroke="#ff7f7f" stroke-width="2"/>
+      <rect x="290" y="110" width="80" height="80" fill="none" stroke="#ff7f7f" stroke-width="2"/>
+    </svg>
+  `)}')`,
+  soccer_field: `url('data:image/svg+xml;utf8,${encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+      <rect width="400" height="300" fill="#f3fff3"/>
+      <rect x="10" y="10" width="380" height="280" fill="none" stroke="#7fbf7f" stroke-width="2"/>
+      <line x1="200" y1="10" x2="200" y2="290" stroke="#7fbf7f" stroke-width="2"/>
+      <circle cx="200" cy="150" r="35" fill="none" stroke="#7fbf7f" stroke-width="2"/>
+      <rect x="10" y="100" width="60" height="100" fill="none" stroke="#7fbf7f" stroke-width="2"/>
+      <rect x="330" y="100" width="60" height="100" fill="none" stroke="#7fbf7f" stroke-width="2"/>
+      <rect x="10" y="125" width="20" height="50" fill="none" stroke="#7fbf7f" stroke-width="2"/>
+      <rect x="370" y="125" width="20" height="50" fill="none" stroke="#7fbf7f" stroke-width="2"/>
+    </svg>
+  `)}')`,
+  volleyball_court: `url('data:image/svg+xml;utf8,${encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+      <rect width="400" height="300" fill="#fff5f0"/>
+      <rect x="40" y="40" width="320" height="220" fill="none" stroke="#ff9f5f" stroke-width="2"/>
+      <line x1="200" y1="40" x2="200" y2="260" stroke="#ff9f5f" stroke-width="2"/> <!-- net -->
+      <rect x="40" y="40" width="320" height="110" fill="none" stroke="#ff9f5f" stroke-width="1" opacity="0.6"/>
+      <rect x="40" y="150" width="320" height="110" fill="none" stroke="#ff9f5f" stroke-width="1" opacity="0.6"/>
+    </svg>
+  `)}')`
+};
+
+// --- Elements and existing logic from previous drop-in ---
 const court = document.getElementById('canvas-wrapper');
 const gridOverlay = document.getElementById('grid-overlay');
 const marquee = document.getElementById('marquee');
+const templateLayer = document.getElementById('template-bg');
+const chooseCourt = document.getElementById('choose-court');
 
 let snapEnabled = false;
 let gridSize = 20;
 let history = [];
 let historyPtr = -1;
+let courtTemplate = 'blank';
 
 function setGridSize(px) {
   gridSize = px;
   gridOverlay.style.backgroundSize = `${px}px ${px}px`;
+}
+
+function setCourtTemplate(name) {
+  courtTemplate = name in TEMPLATES ? name : 'blank';
+  const img = TEMPLATES[courtTemplate];
+  templateLayer.style.backgroundImage = img || 'none';
 }
 
 // --- Utilities ---
@@ -31,6 +91,7 @@ function serialize() {
     modifications: document.getElementById('modifications-textarea').value,
     gridSize,
     snapEnabled,
+    courtTemplate,
     items: [...court.querySelectorAll('.item')].map(el => ({
       id: el.id,
       type: el.dataset.type,
@@ -52,7 +113,9 @@ function deserialize(state) {
   document.getElementById('modifications-textarea').value = state.modifications || '';
   setGridSize(state.gridSize || 20);
   snapEnabled = !!state.snapEnabled;
+  setCourtTemplate(state.courtTemplate || 'blank');
   document.getElementById('toggle-grid-btn').textContent = snapEnabled ? 'Disable Grid Snap' : 'Enable Grid Snap';
+  chooseCourt.value = courtTemplate;
 
   court.querySelectorAll('.item').forEach(n => n.remove());
   (state.items || []).forEach(it => {
@@ -90,7 +153,7 @@ function redo() {
   updateUndoRedo();
 }
 
-// --- Draggable items ---
+// --- Draggables (same as before) ---
 let idCounter = 0;
 function nextId() { return 'item_' + (++idCounter); }
 
@@ -177,7 +240,7 @@ function enableDrag(el) {
     offsets = sel.map(n => ({
       node: n,
       left: parseFloat(n.style.left || 0),
-      top: parseFloat(n.style.top || 0)
+      top: parseFloat(n.style.top  || 0)
     }));
     startX = e.clientX; startY = e.clientY;
   });
@@ -195,7 +258,6 @@ function enableDrag(el) {
   el.addEventListener('pointerup', e => {
     if (!el.hasPointerCapture(e.pointerId)) return;
     el.releasePointerCapture(e.pointerId);
-    // snap
     if (snapEnabled) getSelected().forEach(snapToGrid);
     pushHistory();
     altClones = null;
@@ -317,7 +379,6 @@ document.getElementById('align-vertical-btn').addEventListener('click', () => {
   pushHistory();
 });
 
-// simple grouping by adding data-group id
 document.getElementById('group-btn').addEventListener('click', () => {
   const s = getSelected(); if (s.length<2) return;
   const gid = 'g_' + Date.now();
@@ -336,6 +397,12 @@ document.getElementById('toggle-grid-btn').addEventListener('click', (e) => {
 });
 document.getElementById('grid-size').addEventListener('change', (e) => {
   setGridSize(parseInt(e.target.value, 10));
+  pushHistory();
+});
+
+// --- Choose court ---
+chooseCourt.addEventListener('change', (e) => {
+  setCourtTemplate(e.target.value);
   pushHistory();
 });
 
@@ -432,11 +499,13 @@ document.addEventListener('keydown', (e) => {
 // --- Init ---
 (function init() {
   setGridSize(20);
+  setCourtTemplate('blank');
   // restore autosave
   try {
     const saved = localStorage.getItem('peplanner_autosave');
     if (saved) deserialize(JSON.parse(saved));
   } catch {}
+  // seed history
   pushHistory();
   // deselect when clicking empty court
   court.addEventListener('click', (e) => { if (e.target === court) clearSelection(); });

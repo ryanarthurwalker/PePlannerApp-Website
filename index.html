@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PE Planner (Drop-in Build)</title>
+  <title>PE Planner (Choose Court)</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -24,6 +24,19 @@
   </header>
 
   <main class="max-w-5xl mx-auto">
+    <!-- Choose Court -->
+    <section class="mb-4">
+      <label class="font-semibold mr-2" for="choose-court">Choose Court:</label>
+      <select id="choose-court" class="p-2 border rounded">
+        <option value="blank" selected>Blank</option>
+        <option value="basketball_half">Basketball – Half Court</option>
+        <option value="basketball_full">Basketball – Full Court</option>
+        <option value="soccer_field">Soccer Field</option>
+        <option value="volleyball_court">Volleyball Court</option>
+      </select>
+      <span class="text-sm text-gray-600 ml-2">Templates resize automatically with the court.</span>
+    </section>
+
     <section id="game-section" class="mb-6">
       <h2 class="text-xl font-semibold mb-2">Game Name</h2>
       <input id="game-name-input" type="text" class="p-2 border rounded w-full mb-4" placeholder="Enter the game name">
@@ -60,6 +73,7 @@
     <section id="court-section" class="mb-6">
       <h2 class="text-xl font-semibold mb-2">Court Diagram</h2>
       <div id="court-container">
+        <div id="template-bg"></div>
         <div id="grid-overlay"></div>
         <div id="canvas-wrapper" tabindex="0" aria-label="Court design area"></div>
         <div id="marquee" class="marquee hidden"></div>
@@ -93,7 +107,6 @@
       Click on an icon(s) below to add to the diagram
     </p>
 
-    <!-- Top row icons (work even if images missing) -->
     <div id="icon-row" class="flex justify-center gap-4 mt-4 flex-wrap">
       <button id="icon-player" class="iconchip">Player</button>
       <button id="icon-cone" class="iconchip">Cone</button>
