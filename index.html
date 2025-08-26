@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PE Planner (Choose Court)</title>
+  <title>PE Planner (Choose Court + Icons)</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -34,9 +34,9 @@
         <option value="soccer_field">Soccer Field</option>
         <option value="volleyball_court">Volleyball Court</option>
       </select>
-      <span class="text-sm text-gray-600 ml-2">Templates resize automatically with the court.</span>
     </section>
 
+    <!-- Forms -->
     <section id="game-section" class="mb-6">
       <h2 class="text-xl font-semibold mb-2">Game Name</h2>
       <input id="game-name-input" type="text" class="p-2 border rounded w-full mb-4" placeholder="Enter the game name">
@@ -70,6 +70,7 @@
       <button id="export-png-btn" class="px-6 py-3 bg-green-700 text-white rounded">Export PNG</button>
     </section>
 
+    <!-- Court -->
     <section id="court-section" class="mb-6">
       <h2 class="text-xl font-semibold mb-2">Court Diagram</h2>
       <div id="court-container">
@@ -78,58 +79,55 @@
         <div id="canvas-wrapper" tabindex="0" aria-label="Court design area"></div>
         <div id="marquee" class="marquee hidden"></div>
       </div>
-
-      <div id="grid-controls" class="flex flex-wrap items-center justify-center gap-4 mt-4">
-        <button id="toggle-grid-btn" class="px-4 py-2 bg-gray-600 text-white rounded">Enable Grid Snap</button>
-        <label for="grid-size" class="font-bold">Grid Size:</label>
-        <select id="grid-size" class="p-1 border rounded">
-          <option value="20" selected>20px</option>
-          <option value="40">40px</option>
-          <option value="60">60px</option>
-        </select>
-        <span class="text-sm text-gray-600">Tip: Shift+Click to multi-select, Delete to remove, Shift+Arrow to nudge, R to rotate, Alt/Option while dragging to duplicate.</span>
-      </div>
-
-      <div class="mt-4 space-x-2 text-center">
-        <button id="group-btn" class="px-4 py-2 bg-blue-500 text-white rounded">Group</button>
-        <button id="ungroup-btn" class="px-4 py-2 bg-yellow-500 text-white rounded">Ungroup</button>
-        <button id="align-horizontal-btn" class="px-4 py-2 bg-green-500 text-white rounded">Align Horizontally</button>
-        <button id="align-vertical-btn" class="px-4 py-2 bg-green-500 text-white rounded">Align Vertically</button>
-      </div>
-
-      <div class="mt-4 text-center">
-        <button id="save-json-btn" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Save as JSON</button>
-        <input type="file" id="load-json-btn" accept=".json" class="ml-2">
-      </div>
     </section>
 
-    <p class="text-lg text-center mt-4 mb-2 font-semibold">
-      Click on an icon(s) below to add to the diagram
-    </p>
+    <!-- Controls -->
+    <div id="grid-controls" class="flex flex-wrap items-center justify-center gap-4 mt-4">
+      <button id="toggle-grid-btn" class="px-4 py-2 bg-gray-600 text-white rounded">Enable Grid Snap</button>
+      <label for="grid-size" class="font-bold">Grid Size:</label>
+      <select id="grid-size" class="p-1 border rounded">
+        <option value="20" selected>20px</option>
+        <option value="40">40px</option>
+        <option value="60">60px</option>
+      </select>
+    </div>
+
+    <div class="mt-4 space-x-2 text-center">
+      <button id="group-btn" class="px-4 py-2 bg-blue-500 text-white rounded">Group</button>
+      <button id="ungroup-btn" class="px-4 py-2 bg-yellow-500 text-white rounded">Ungroup</button>
+      <button id="align-horizontal-btn" class="px-4 py-2 bg-green-500 text-white rounded">Align Horizontally</button>
+      <button id="align-vertical-btn" class="px-4 py-2 bg-green-500 text-white rounded">Align Vertically</button>
+    </div>
+
+    <div class="mt-4 text-center">
+      <button id="save-json-btn" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Save as JSON</button>
+      <input type="file" id="load-json-btn" accept=".json" class="ml-2">
+    </div>
+
+    <!-- Icons -->
+    <p class="text-lg text-center mt-4 mb-2 font-semibold">Click an icon below to add to the diagram</p>
 
     <div id="icon-row" class="flex justify-center gap-4 mt-4 flex-wrap">
-      <button id="icon-player" class="iconchip">Player</button>
-      <button id="icon-cone" class="iconchip">Cone</button>
-      <button id="icon-circle" class="iconchip">Circle</button>
-      <button id="icon-square" class="iconchip">Square</button>
-      <button id="icon-arrow-up" class="iconchip">↑</button>
-      <button id="icon-arrow-down" class="iconchip">↓</button>
-      <button id="icon-arrow-left" class="iconchip">←</button>
-      <button id="icon-arrow-right" class="iconchip">→</button>
+      <button id="icon-player" class="icon" title="Add Player"><img src="assets/svg/player_icon.svg" alt="Player Icon" class="w-10 h-10"></button>
+      <button id="icon-cone" class="icon" title="Add Cone"><img src="assets/svg/low_profile_cone.svg" alt="Cone Icon" class="w-10 h-10"></button>
+      <button id="icon-circle" class="icon" title="Add Circle"><img src="assets/svg/circle_icon.svg" alt="Circle Icon" class="w-10 h-10"></button>
+      <button id="icon-square" class="icon" title="Add Square"><img src="assets/svg/square_icon.svg" alt="Square Icon" class="w-10 h-10"></button>
+      <button id="icon-arrow-up" class="icon" title="Add Up Arrow"><img src="assets/svg/arrow_sm_up_icon.svg" alt="Up Arrow" class="w-10 h-10"></button>
+      <button id="icon-arrow-down" class="icon" title="Add Down Arrow"><img src="assets/svg/arrow_sm_down_icon.svg" alt="Down Arrow" class="w-10 h-10"></button>
+      <button id="icon-arrow-left" class="icon" title="Add Left Arrow"><img src="assets/svg/arrow_sm_left_icon.svg" alt="Left Arrow" class="w-10 h-10"></button>
+      <button id="icon-arrow-right" class="icon" title="Add Right Arrow"><img src="assets/svg/arrow_sm_right_icon.svg" alt="Right Arrow" class="w-10 h-10"></button>
     </div>
 
     <div id="icon-row-2" class="flex justify-center gap-4 mt-4 flex-wrap">
-      <button id="icon-frisbee" class="iconchip">Frisbee</button>
-      <button id="icon-tennis" class="iconchip">Tennis</button>
-      <button id="icon-badminton" class="iconchip">Badminton</button>
-      <button id="icon-volleyball" class="iconchip">Volleyball</button>
-      <button id="icon-baseball" class="iconchip">Baseball</button>
-      <button id="icon-football" class="iconchip">Football</button>
-      <button id="icon-soccer" class="iconchip">Soccer</button>
-      <button id="icon-basketball" class="iconchip">Basketball</button>
+      <button id="icon-frisbee" class="icon" title="Add Frisbee"><img src="assets/svg/frisbee_icon.svg" alt="Frisbee Icon" class="w-10 h-10"></button>
+      <button id="icon-tennis" class="icon" title="Add Tennis"><img src="assets/svg/tennis_ball_icon.svg" alt="Tennis Icon" class="w-10 h-10"></button>
+      <button id="icon-badminton" class="icon" title="Add Badminton"><img src="assets/svg/badminton_icon.svg" alt="Badminton Icon" class="w-10 h-10"></button>
+      <button id="icon-volleyball" class="icon" title="Add Volleyball"><img src="assets/svg/volleyball_icon.svg" alt="Volleyball Icon" class="w-10 h-10"></button>
+      <button id="icon-baseball" class="icon" title="Add Baseball"><img src="assets/svg/baseball_icon.svg" alt="Baseball Icon" class="w-10 h-10"></button>
+      <button id="icon-football" class="icon" title="Add Football"><img src="assets/svg/american_football_icon.svg" alt="Football Icon" class="w-10 h-10"></button>
+      <button id="icon-soccer" class="icon" title="Add Soccer"><img src="assets/svg/football_icon.svg" alt="Soccer Ball Icon" class="w-10 h-10"></button>
+      <button id="icon-basketball" class="icon" title="Add Basketball"><img src="assets/svg/basketball_icon.svg" alt="Basketball Icon" class="w-10 h-10"></button>
     </div>
   </main>
-
-  <img src="https://hits.dwyl.com/username/repo-name.svg" alt="Visitors" style="display:none">
 </body>
 </html>

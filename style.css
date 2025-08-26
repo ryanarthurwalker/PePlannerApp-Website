@@ -1,79 +1,9 @@
-/* Layout & court */
-#court-container {
-  position: relative;
-  width: min(1000px, 95vw);
-  height: calc(min(1000px, 95vw) * 0.75); /* 4:3 */
-  margin: 0 auto;
-  border: 2px solid #ddd;
-  border-radius: 12px;
-  background: #fff;
-  overflow: hidden;
-}
-/* Template background layer */
-#template-bg {
-  position: absolute;
-  inset: 0;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-  pointer-events: none;
-  opacity: 0.9;
-}
-#grid-overlay {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(to right, rgba(0,0,0,0.08) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0,0,0,0.08) 1px, transparent 1px);
-  background-size: 20px 20px; /* default; JS updates this */
-  pointer-events: none;
-}
-#canvas-wrapper {
-  position: absolute;
-  inset: 0;
-  touch-action: none; /* no page scroll during drag */
-}
-
-/* Draggables */
-.item {
-  position: absolute;
-  min-width: 48px;
-  min-height: 32px;
-  padding: 6px 8px;
-  border: 1px dashed #bbb;
-  background: rgba(0,0,0,0.03);
-  border-radius: 8px;
-  cursor: grab;
-  user-select: none;
-  transform-origin: center center;
-}
-.item:active { cursor: grabbing; }
-.item.selected { outline: 2px solid #4a90e2; z-index: 1000; }
-
-/* Zone resizer */
-.item.zone { background: rgba(0,128,255,0.08); border-style: solid; }
-.item.zone .resize {
-  position: absolute; right: -6px; bottom: -6px; width: 12px; height: 12px;
-  border: 1px solid #777; background: #fff; border-radius: 2px; cursor: nwse-resize;
-}
-
-/* Marquee */
-.marquee {
-  position: absolute;
-  border: 1px dashed #4a90e2;
-  background: rgba(74,144,226,0.15);
-  pointer-events: none;
-}
-.hidden { display: none; }
-
-/* Icon chips (fallback if images unavailable) */
-.iconchip {
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid #ddd;
-  background: #fff;
-  cursor: pointer;
-}
-
-/* Buttons disabled look */
-button:disabled { opacity: .5; cursor: not-allowed; }
+#court-container { position: relative; width: min(1000px,95vw); height: calc(min(1000px,95vw)*0.75); margin:0 auto; border:2px solid #ddd; border-radius:12px; background:#fff; overflow:hidden; }
+#template-bg{position:absolute;inset:0;background-size:100% 100%;background-repeat:no-repeat;pointer-events:none;opacity:.9;}
+#grid-overlay{position:absolute;inset:0;background-image:linear-gradient(to right,rgba(0,0,0,.08)1px,transparent 1px),linear-gradient(to bottom,rgba(0,0,0,.08)1px,transparent 1px);background-size:20px 20px;pointer-events:none;}
+#canvas-wrapper{position:absolute;inset:0;touch-action:none;}
+.item{position:absolute;min-width:48px;min-height:32px;padding:6px 8px;border:1px dashed #bbb;background:rgba(0,0,0,.03);border-radius:8px;cursor:grab;user-select:none;transform-origin:center;}
+.item:active{cursor:grabbing;}
+.item.selected{outline:2px solid #4a90e2;z-index:1000;}
+.icon{border:1px solid #e5e7eb;border-radius:.5rem;padding:4px;background:#fff;}
+.icon:hover{background:#f9fafb;}
