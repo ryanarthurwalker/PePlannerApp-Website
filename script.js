@@ -1,510 +1,443 @@
-// DOM Elements
-const elements = {
-    gameNameInput: document.getElementById("game-name-input"),
-    notesTextarea: document.getElementById("notes-textarea"),
-    equipmentTextarea: document.getElementById("equipment-textarea"),
-    objectiveTextarea: document.getElementById("objective-textarea"),
-    modificationsTextarea: document.getElementById("modifications-textarea"),
-    exportPdfBtn: document.getElementById("export-pdf-btn"),
-    courtContainer: document.getElementById("court-container"),
-    undoBtn: document.getElementById("undo-btn"),
-    redoBtn: document.getElementById("redo-btn"),
-    clearBtn: document.getElementById("clear-court"),
-    groupBtn: document.getElementById("group-btn"),
-    ungroupBtn: document.getElementById("ungroup-btn"),
-    alignHorizontalBtn: document.getElementById("align-horizontal-btn"),
-    alignVerticalBtn: document.getElementById("align-vertical-btn"),
-    gridToggleBtn: document.getElementById("toggle-grid-btn"),
-    gridSizeSelect: document.getElementById("grid-size")
-};
+// --- State & elements ---
+const court = document.getElementById('canvas-wrapper');
+const gridOverlay = document.getElementById('grid-overlay');
+const marquee = document.getElementById('marquee');
 
-// State for Undo/Redo and Grid
-let history = [], redoStack = [], selectedIcons = [], gridActive = false, gridSize = 20;
+let snapEnabled = false;
+let gridSize = 20;
+let history = [];
+let historyPtr = -1;
 
-// === State Management ===
-function saveState() {
-    history.push(elements.courtContainer.innerHTML);
-    redoStack = [];
+function setGridSize(px) {
+  gridSize = px;
+  gridOverlay.style.backgroundSize = `${px}px ${px}px`;
 }
 
-function undoAction() {
-    if (history.length > 0) {
-        redoStack.push(elements.courtContainer.innerHTML);
-        elements.courtContainer.innerHTML = history.pop();
-        reinitializeDraggable();
-    }
+// --- Utilities ---
+function getSelected() {
+  return Array.from(court.querySelectorAll('.item.selected'));
 }
-
-function redoAction() {
-    if (redoStack.length > 0) {
-        history.push(elements.courtContainer.innerHTML);
-        elements.courtContainer.innerHTML = redoStack.pop();
-        reinitializeDraggable();
-    }
-}
-
-// === PDF Export ===
-// === PDF Export ===
-elements.exportPdfBtn.addEventListener("click", () => {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF("p", "mm", "a4");
-
-    const addSection = (title, content, y) => {
-        if (content.trim()) {
-            doc.setFont("helvetica", "bold").setFontSize(16).text(title, 10, y);
-            const contentLines = doc.splitTextToSize(content.trim(), 180); // Wrap text to 180mm width
-            const lineHeight = 7; // Line height in mm
-            let currentY = y + 10;
-
-            contentLines.forEach((line) => {
-                if (currentY + lineHeight > 280) {
-                    doc.addPage();
-                    currentY = 20;
-                }
-                doc.setFont("helvetica", "normal").setFontSize(14).text(line, 10, currentY);
-                currentY += lineHeight;
-            });
-
-            return currentY + 10;
-        }
-        return y;
-    };
-
-    let y = 10;
-
-    y = addSection("Game Name:", elements.gameNameInput.value.trim(), y);
-    y = addSection("Quick Notes:", elements.notesTextarea.value.trim(), y);
-    y = addSection("Equipment:", elements.equipmentTextarea.value.trim(), y);
-    y = addSection("Objective:", elements.objectiveTextarea.value.trim(), y);
-    y = addSection("Modifications:", elements.modificationsTextarea.value.trim(), y);
-
-    const fileName = elements.gameNameInput.value.trim() || "PE_Planner_Diagram";
-
-    const selectedElements = document.querySelectorAll(".selected");
-    selectedElements.forEach((el) => el.classList.remove("selected"));
-
-    if (elements.courtContainer.innerHTML.trim()) {
-        html2canvas(elements.courtContainer, { backgroundColor: "#ffffff" }).then((canvas) => {
-            selectedElements.forEach((el) => el.classList.add("selected"));
-
-            const imgData = canvas.toDataURL("image/png");
-            const imgWidth = 190;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-            doc.addImage(imgData, "PNG", 10, y, imgWidth, imgHeight);
-
-            // Static Footer Text
-            doc.setFontSize(10);
-            doc.setTextColor(0, 0, 0);
-            doc.text("Created with peplanner.com", 10, 287);
-
-            doc.save(`${fileName.replace(/\s+/g, "_")}.pdf`);
-        });
-    }
-});
-
-// Snap Elements to Grid (Center Alignment)
-function snapToGrid(element, gridSize) {
-    const rect = element.getBoundingClientRect(); // Get the dimensions of the element
-    const parentRect = element.parentElement.getBoundingClientRect(); // Get parent container dimensions
-
-    // Calculate the element's center relative to the parent
-    const centerX = rect.left - parentRect.left + rect.width / 2;
-    const centerY = rect.top - parentRect.top + rect.height / 2;
-
-    // Calculate the new snapped position
-    const snappedCenterX = Math.round(centerX / gridSize) * gridSize;
-    const snappedCenterY = Math.round(centerY / gridSize) * gridSize;
-
-    // Adjust the top-left position to align the center with the grid
-    const newLeft = snappedCenterX - rect.width / 2;
-    const newTop = snappedCenterY - rect.height / 2;
-
-    // Apply the new position
-    element.style.left = `${newLeft}px`;
-    element.style.top = `${newTop}px`;
-}
-
-function makeDraggable(element) {
-    let offsetX, offsetY;
-
-    element.addEventListener("mousedown", (e) => {
-        e.preventDefault();
-        const startX = e.clientX, startY = e.clientY;
-        offsetX = element.offsetLeft, offsetY = element.offsetTop;
-
-        const moveElement = (e) => {
-            element.style.left = `${offsetX + e.clientX - startX}px`;
-            element.style.top = `${offsetY + e.clientY - startY}px`;
-        };
-
-        const stopDragging = () => {
-            document.removeEventListener("mousemove", moveElement);
-            document.removeEventListener("mouseup", stopDragging);
-        
-            if (gridActive) {
-                const gridSize = parseInt(elements.gridSizeSelect.value, 10);
-                snapToGrid(element, gridSize); // Snap to grid with center alignment
-            }
-            saveState(); // Save state for undo/redo
-        };
-
-        document.addEventListener("mousemove", moveElement);
-        document.addEventListener("mouseup", stopDragging);
-    });
-}
-
-function reinitializeDraggable() {
-    elements.courtContainer.querySelectorAll(".draggable").forEach(makeDraggable);
-}
-
-// === Icon Management ===
-function addDraggableIcon(iconId, imagePath) {
-    document.getElementById(iconId).addEventListener("click", () => {
-        const icon = document.createElement("div");
-        icon.className = "draggable";
-        Object.assign(icon.style, { position: "absolute", left: "100px", top: "100px", width: "30px", height: "30px" });
-        icon.innerHTML = `<img src="${imagePath}" style="width: 100%; height: 100%; object-fit: contain; pointer-events: none;">`;
-
-        elements.courtContainer.appendChild(icon);
-        makeDraggable(icon);
-        saveState();
-    });
-}
-
-const icons = [
-    { id: "icon-player", path: "assets/svg/player_icon.svg" },
-    { id: "icon-cone", path: "assets/svg/low_profile_cone.svg" },
-    { id: "icon-circle", path: "assets/svg/circle_icon.svg" },
-    { id: "icon-square", path: "assets/svg/square_icon.svg" },
-    { id: "icon-arrow-up", path: "assets/svg/arrow_sm_up_icon.svg" },
-    { id: "icon-arrow-down", path: "assets/svg/arrow_sm_down_icon.svg" },
-    { id: "icon-arrow-left", path: "assets/svg/arrow_sm_left_icon.svg" },
-    { id: "icon-arrow-right", path: "assets/svg/arrow_sm_right_icon.svg" },
-    { id: "icon-frisbee", path: "assets/svg/frisbee_icon.svg" },
-    { id: "icon-tennis", path: "assets/svg/tennis_ball_icon.svg" },
-    { id: "icon-badminton", path: "assets/svg/badminton_icon.svg" },
-    { id: "icon-volleyball", path: "assets/svg/volleyball_icon.svg" },
-    { id: "icon-baseball", path: "assets/svg/baseball_icon.svg" },
-    { id: "icon-football", path: "assets/svg/american_football_icon.svg" },
-    { id: "icon-soccer", path: "assets/svg/football_icon.svg" },
-    { id: "icon-basketball", path: "assets/svg/basketball_icon.svg" }
-];
-icons.forEach((icon) => addDraggableIcon(icon.id, icon.path));
-
-// === Grid Management ===
-elements.gridToggleBtn.addEventListener("click", () => {
-    gridActive = !gridActive; // Toggle grid state
-    elements.courtContainer.classList.toggle("grid-active", gridActive); // Apply grid class
-    elements.gridToggleBtn.textContent = gridActive ? "Disable Grid Snap" : "Enable Grid Snap";
-
-    if (gridActive) {
-        // Set grid size when enabled
-        elements.courtContainer.style.backgroundSize = `${gridSize}px ${gridSize}px`;
-    } else {
-        // Reset grid styling when disabled
-        elements.courtContainer.style.backgroundSize = "";
-        elements.courtContainer.style.backgroundImage = "";
-    }
-});
-
-elements.gridSizeSelect.addEventListener("change", (e) => {
-    gridSize = parseInt(e.target.value, 10); // Update grid size
-    if (gridActive) {
-        // Update grid size dynamically if grid is active
-        elements.courtContainer.style.backgroundSize = `${gridSize}px ${gridSize}px`;
-    }
-});
-// === Undo/Redo and Clear Actions ===
-elements.undoBtn.addEventListener("click", undoAction);
-elements.redoBtn.addEventListener("click", redoAction);
-elements.clearBtn.addEventListener("click", () => {
-    saveState();
-    elements.courtContainer.innerHTML = "";
-});
-
-// === Grouping and Ungrouping ===
-elements.groupBtn.addEventListener("click", () => {
-    if (selectedIcons.length < 2) {
-        alert("Select at least two icons to group!");
-        return;
-    }
-
-    const group = document.createElement("div");
-    group.className = "draggable group";
-    Object.assign(group.style, {
-        position: "absolute",
-        border: "2px dashed blue" // Visual indicator for grouping
-    });
-
-    // Calculate group bounds
-    const bounds = getGroupBounds(selectedIcons);
-    Object.assign(group.style, {
-        left: `${bounds.left}px`,
-        top: `${bounds.top}px`,
-        width: `${bounds.width}px`,
-        height: `${bounds.height}px`
-    });
-
-    // Move selected icons into the group
-    selectedIcons.forEach((icon) => {
-        const xOffset = icon.offsetLeft - bounds.left;
-        const yOffset = icon.offsetTop - bounds.top;
-        Object.assign(icon.style, {
-            left: `${xOffset}px`,
-            top: `${yOffset}px`,
-            pointerEvents: "none" // Disable interactions with individual items
-        });
-        group.appendChild(icon);
-    });
-
-    elements.courtContainer.appendChild(group);
-    makeDraggable(group); // Make the group draggable
-    clearSelection(); // Clear the selection state
-    saveState(); // Save the state
-});
-
-elements.ungroupBtn.addEventListener("click", () => {
-    const groups = elements.courtContainer.querySelectorAll(".group");
-    groups.forEach((group) => {
-        const children = [...group.children];
-        children.forEach((child) => {
-            Object.assign(child.style, {
-                left: `${group.offsetLeft + parseInt(child.style.left, 10)}px`,
-                top: `${group.offsetTop + parseInt(child.style.top, 10)}px`,
-                pointerEvents: "auto" // Re-enable interactions
-            });
-            elements.courtContainer.appendChild(child);
-            makeDraggable(child);
-        });
-        group.remove();
-    });
-    saveState();
-});
-
-// Utility function to calculate bounds for a group
-function getGroupBounds(icons) {
-    const left = Math.min(...icons.map((icon) => icon.offsetLeft));
-    const top = Math.min(...icons.map((icon) => icon.offsetTop));
-    const right = Math.max(...icons.map((icon) => icon.offsetLeft + icon.offsetWidth));
-    const bottom = Math.max(...icons.map((icon) => icon.offsetTop + icon.offsetHeight));
-    return { left, top, width: right - left, height: bottom - top };
-}
-
-// Selection management
-function toggleSelection(icon) {
-    icon.classList.toggle("selected");
-    if (selectedIcons.includes(icon)) {
-        selectedIcons = selectedIcons.filter((item) => item !== icon);
-    } else {
-        selectedIcons.push(icon);
-    }
-}
-
 function clearSelection() {
-    selectedIcons.forEach((icon) => icon.classList.remove("selected"));
-    selectedIcons = [];
+  getSelected().forEach(el => el.classList.remove('selected'));
 }
 
-// Add event listeners for selecting icons
-elements.courtContainer.addEventListener("click", (e) => {
-    const target = e.target.closest(".draggable");
-    if (!target || target.classList.contains("group")) return;
+// --- History ---
+function serialize() {
+  return {
+    gameName: document.getElementById('game-name-input').value,
+    objective: document.getElementById('objective-textarea').value,
+    notes: document.getElementById('notes-textarea').value,
+    equipment: document.getElementById('equipment-textarea').value,
+    modifications: document.getElementById('modifications-textarea').value,
+    gridSize,
+    snapEnabled,
+    items: [...court.querySelectorAll('.item')].map(el => ({
+      id: el.id,
+      type: el.dataset.type,
+      left: el.style.left,
+      top: el.style.top,
+      width: el.style.width || null,
+      height: el.style.height || null,
+      rotate: el.dataset.rotate || '0',
+      text: el.textContent
+    }))
+  };
+}
+function deserialize(state) {
+  if (!state) return;
+  document.getElementById('game-name-input').value = state.gameName || '';
+  document.getElementById('objective-textarea').value = state.objective || '';
+  document.getElementById('notes-textarea').value = state.notes || '';
+  document.getElementById('equipment-textarea').value = state.equipment || '';
+  document.getElementById('modifications-textarea').value = state.modifications || '';
+  setGridSize(state.gridSize || 20);
+  snapEnabled = !!state.snapEnabled;
+  document.getElementById('toggle-grid-btn').textContent = snapEnabled ? 'Disable Grid Snap' : 'Enable Grid Snap';
 
-    if (e.shiftKey || e.ctrlKey || e.metaKey) {
-        toggleSelection(target);
+  court.querySelectorAll('.item').forEach(n => n.remove());
+  (state.items || []).forEach(it => {
+    const el = createItem(it.type, parseFloat(it.left)||40, parseFloat(it.top)||40);
+    el.id = it.id || el.id;
+    el.textContent = it.text || it.type;
+    if (it.width) el.style.width = it.width;
+    if (it.height) el.style.height = it.height;
+    el.dataset.rotate = it.rotate || '0';
+    applyRotation(el);
+  });
+}
+function pushHistory() {
+  const current = serialize();
+  history.splice(historyPtr + 1);
+  history.push(current);
+  historyPtr = history.length - 1;
+  updateUndoRedo();
+  localStorage.setItem('peplanner_autosave', JSON.stringify(current));
+}
+function updateUndoRedo() {
+  document.getElementById('undo-btn').disabled = !(historyPtr > 0);
+  document.getElementById('redo-btn').disabled = !(historyPtr < history.length - 1);
+}
+function undo() {
+  if (historyPtr <= 0) return;
+  historyPtr--;
+  deserialize(history[historyPtr]);
+  updateUndoRedo();
+}
+function redo() {
+  if (historyPtr >= history.length - 1) return;
+  historyPtr++;
+  deserialize(history[historyPtr]);
+  updateUndoRedo();
+}
+
+// --- Draggable items ---
+let idCounter = 0;
+function nextId() { return 'item_' + (++idCounter); }
+
+function applyRotation(el) {
+  const deg = parseFloat(el.dataset.rotate || '0');
+  el.style.transform = `rotate(${deg}deg)`;
+}
+
+function enableResize(el, handle) {
+  let sx, sy, sw, sh;
+  handle.addEventListener('pointerdown', e => {
+    e.stopPropagation();
+    handle.setPointerCapture(e.pointerId);
+    sx = e.clientX; sy = e.clientY;
+    const r = el.getBoundingClientRect();
+    sw = r.width; sh = r.height;
+  });
+  handle.addEventListener('pointermove', e => {
+    if (!handle.hasPointerCapture(e.pointerId)) return;
+    const dx = e.clientX - sx;
+    const dy = e.clientY - sy;
+    el.style.width = Math.max(20, sw + dx) + 'px';
+    el.style.height = Math.max(20, sh + dy) + 'px';
+  });
+  handle.addEventListener('pointerup', e => {
+    if (!handle.hasPointerCapture(e.pointerId)) return;
+    handle.releasePointerCapture(e.pointerId);
+    pushHistory();
+  });
+}
+
+function createItem(type, x=40, y=40) {
+  const el = document.createElement('div');
+  el.className = 'item';
+  el.dataset.type = type;
+  el.dataset.rotate = '0';
+  el.id = nextId();
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+
+  if (type === 'zone') {
+    el.classList.add('zone');
+    el.textContent = 'Zone';
+    el.style.width = '160px';
+    el.style.height = '100px';
+    const h = document.createElement('div');
+    h.className = 'resize';
+    el.appendChild(h);
+    enableResize(el, h);
+  } else {
+    el.textContent = type;
+  }
+  applyRotation(el);
+  court.appendChild(el);
+  enableDrag(el);
+  return el;
+}
+
+function cloneItem(node) {
+  const el = createItem(node.dataset.type, parseFloat(node.style.left||0)+12, parseFloat(node.style.top||0)+12);
+  el.textContent = node.textContent;
+  el.dataset.rotate = node.dataset.rotate || '0';
+  el.style.width = node.style.width;
+  el.style.height = node.style.height;
+  applyRotation(el);
+  return el;
+}
+
+function enableDrag(el) {
+  let startX=0, startY=0, offsets=[], altClones=null;
+
+  el.addEventListener('pointerdown', e => {
+    el.setPointerCapture(e.pointerId);
+    if (e.altKey) {
+      const selection = getSelected().length ? getSelected() : [el];
+      altClones = selection.map(n => cloneItem(n));
+      clearSelection();
+      altClones.forEach(c => c.classList.add('selected'));
     } else {
-        clearSelection();
-        toggleSelection(target);
+      if (!e.shiftKey && !el.classList.contains('selected')) clearSelection();
+      el.classList.add('selected');
     }
-});
-
-// === Align Horizontally ===
-elements.alignHorizontalBtn.addEventListener("click", () => {
-    if (selectedIcons.length < 2) {
-        alert("Select at least two icons to align!");
-        return;
-    }
-
-    // Find the top-most position among selected items
-    const top = Math.min(...selectedIcons.map((icon) => {
-        const parent = icon.closest(".group") || icon;
-        return parent.offsetTop;
+    const sel = getSelected();
+    offsets = sel.map(n => ({
+      node: n,
+      left: parseFloat(n.style.left || 0),
+      top: parseFloat(n.style.top || 0)
     }));
+    startX = e.clientX; startY = e.clientY;
+  });
 
-    // Calculate spacing between icons
-    const sortedIcons = selectedIcons.slice().sort((a, b) => {
-        const parentA = a.closest(".group") || a;
-        const parentB = b.closest(".group") || b;
-        return parentA.offsetLeft - parentB.offsetLeft;
+  el.addEventListener('pointermove', e => {
+    if (!el.hasPointerCapture(e.pointerId)) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    offsets.forEach(p => {
+      p.node.style.left = (p.left + dx) + 'px';
+      p.node.style.top  = (p.top  + dy) + 'px';
     });
+  });
 
-    const spacing = 40; // Fixed spacing value (adjustable)
+  el.addEventListener('pointerup', e => {
+    if (!el.hasPointerCapture(e.pointerId)) return;
+    el.releasePointerCapture(e.pointerId);
+    // snap
+    if (snapEnabled) getSelected().forEach(snapToGrid);
+    pushHistory();
+    altClones = null;
+  });
 
-    // Align icons horizontally
-    sortedIcons.forEach((icon, index) => {
-        const parent = icon.closest(".group") || icon;
-        parent.style.top = `${top}px`;
-        parent.style.left = `${index * spacing}px`; // Set horizontal spacing
-    });
-
-    saveState();
-});
-
-// === Align Vertically ===
-elements.alignVerticalBtn.addEventListener("click", () => {
-    if (selectedIcons.length < 2) {
-        alert("Select at least two icons to align!");
-        return;
-    }
-
-    // Find the left-most position among selected items
-    const left = Math.min(...selectedIcons.map((icon) => {
-        const parent = icon.closest(".group") || icon;
-        return parent.offsetLeft;
-    }));
-
-    // Calculate spacing between icons
-    const sortedIcons = selectedIcons.slice().sort((a, b) => {
-        const parentA = a.closest(".group") || a;
-        const parentB = b.closest(".group") || b;
-        return parentA.offsetTop - parentB.offsetTop;
-    });
-
-    const spacing = 40; // Fixed spacing value (adjustable)
-
-    // Align icons vertically
-    sortedIcons.forEach((icon, index) => {
-        const parent = icon.closest(".group") || icon;
-        parent.style.left = `${left}px`;
-        parent.style.top = `${index * spacing}px`; // Set vertical spacing
-    });
-
-    saveState();
-});
-
-function exportAsJSON() {
-    const gameName = elements.gameNameInput.value.trim() || "court_diagram";
-
-    // Collect rectangle (court-wrapper) data
-    const rectangle = elements.courtContainer.querySelector("#canvas-wrapper");
-    const rectangleData = {
-        type: "rectangle",
-        left: rectangle.offsetLeft,
-        top: rectangle.offsetTop,
-        width: rectangle.offsetWidth,
-        height: rectangle.offsetHeight,
-        backgroundColor: rectangle.style.backgroundColor || "transparent",
-        borderColor: rectangle.style.borderColor || "black",
-        borderWidth: rectangle.style.borderWidth || "2px",
-    };
-
-    // Collect draggable icons data
-    const iconsData = [...elements.courtContainer.querySelectorAll(".draggable")].map((icon) => {
-        const rect = icon.getBoundingClientRect();
-        const parentRect = elements.courtContainer.getBoundingClientRect();
-
-        return {
-            type: "icon",
-            id: icon.dataset.id || null,
-            left: rect.left - parentRect.left,
-            top: rect.top - parentRect.top,
-            width: icon.style.width || `${rect.width}px`,
-            height: icon.style.height || `${rect.height}px`,
-            image: icon.querySelector("img")?.src || null,
-        };
-    });
-
-    // Combine all data into one JSON object
-    const data = {
-        gameName,
-        quickNotes: elements.notesTextarea.value.trim(),
-        equipment: elements.equipmentTextarea.value.trim(),
-        objective: elements.objectiveTextarea.value.trim(),
-        modifications: elements.modificationsTextarea.value,
-        rectangle: rectangleData, // Add the rectangle data
-        icons: iconsData,
-    };
-
-    // Save as JSON file
-    const json = JSON.stringify(data, null, 2);
-    const blob = new Blob([json], { type: "application/json" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `${gameName.replace(/\s+/g, "_")}.json`;
-    link.click();
+  el.addEventListener('click', e => {
+    if (!e.shiftKey && !el.classList.contains('selected')) clearSelection();
+    el.classList.toggle('selected');
+    e.stopPropagation();
+  });
 }
 
-document.getElementById("save-json-btn").addEventListener("click", exportAsJSON);
-
-
-function uploadJSON(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        const data = JSON.parse(e.target.result);
-
-        // Restore text fields
-        elements.gameNameInput.value = data.gameName || "Unnamed Game";
-        elements.notesTextarea.value = data.quickNotes || "";
-        elements.equipmentTextarea.value = data.equipment || "";
-        elements.objectiveTextarea.value = data.objective || "";
-        elements.modificationsTextarea.value = data.modifications || ""; 
-        
-
-        // Clear existing court diagram
-        elements.courtContainer.innerHTML = "";
-
-        // Reconstruct rectangle (court-wrapper)
-        const rectangleData = data.rectangle;
-        if (rectangleData) {
-            const rectangle = document.createElement("div");
-            rectangle.id = "canvas-wrapper";
-            Object.assign(rectangle.style, {
-                position: "absolute",
-                left: `${rectangleData.left}px`,
-                top: `${rectangleData.top}px`,
-                width: `${rectangleData.width}px`,
-                height: `${rectangleData.height}px`,
-                backgroundColor: rectangleData.backgroundColor || "transparent",
-                borderColor: rectangleData.borderColor || "black",
-                borderWidth: rectangleData.borderWidth || "2px",
-                borderStyle: "solid",
-            });
-            elements.courtContainer.appendChild(rectangle);
-        }
-
-        // Reconstruct draggable icons
-        data.icons.forEach((iconData) => {
-            const icon = document.createElement("div");
-            icon.className = "draggable";
-            Object.assign(icon.style, {
-                position: "absolute",
-                left: `${iconData.left}px`,
-                top: `${iconData.top}px`,
-                width: iconData.width,
-                height: iconData.height,
-            });
-
-            if (iconData.image) {
-                const img = document.createElement("img");
-                img.src = iconData.image;
-                img.style.width = "100%";
-                img.style.height = "100%";
-                img.style.objectFit = "contain";
-                icon.appendChild(img);
-            }
-
-            elements.courtContainer.appendChild(icon);
-            makeDraggable(icon);
-        });
-
-        saveState(); // Save the restored state
-    };
-
-    reader.readAsText(file);
+function snapToGrid(el) {
+  const left = Math.round(parseFloat(el.style.left || 0) / gridSize) * gridSize;
+  const top  = Math.round(parseFloat(el.style.top  || 0) / gridSize) * gridSize;
+  el.style.left = left + 'px';
+  el.style.top  = top  + 'px';
 }
 
-document.getElementById("load-json-btn").addEventListener("change", uploadJSON);
+// --- Marquee selection ---
+let marqueeStart = null;
+court.addEventListener('pointerdown', e => {
+  if (e.target !== court) return;
+  clearSelection();
+  const rect = court.getBoundingClientRect();
+  marqueeStart = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  marquee.classList.remove('hidden');
+  marquee.style.left = `${marqueeStart.x}px`;
+  marquee.style.top  = `${marqueeStart.y}px`;
+  marquee.style.width = '0px'; marquee.style.height = '0px';
+  court.setPointerCapture(e.pointerId);
+});
+court.addEventListener('pointermove', e => {
+  if (!marqueeStart || !court.hasPointerCapture?.(e.pointerId)) return;
+  const rect = court.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  const left = Math.min(x, marqueeStart.x);
+  const top  = Math.min(y, marqueeStart.y);
+  const w = Math.abs(x - marqueeStart.x);
+  const h = Math.abs(y - marqueeStart.y);
+  marquee.style.left = `${left}px`;
+  marquee.style.top = `${top}px`;
+  marquee.style.width = `${w}px`;
+  marquee.style.height = `${h}px`;
+
+  const box = new DOMRect(left + rect.left, top + rect.top, w, h);
+  court.querySelectorAll('.item').forEach(el => {
+    const r = el.getBoundingClientRect();
+    const overlap = !(r.right < box.x || r.left > box.x + box.width || r.bottom < box.y || r.top > box.y + box.height);
+    el.classList.toggle('selected', overlap);
+  });
+});
+court.addEventListener('pointerup', e => {
+  if (!marqueeStart) return;
+  marqueeStart = null;
+  marquee.classList.add('hidden');
+  court.releasePointerCapture?.(e.pointerId);
+});
+
+// --- Icons palette wiring ---
+const iconMap = {
+  'icon-player': 'Player',
+  'icon-cone': 'Cone',
+  'icon-circle': 'Circle',
+  'icon-square': 'Square',
+  'icon-arrow-up': 'ArrowUp',
+  'icon-arrow-down': 'ArrowDown',
+  'icon-arrow-left': 'ArrowLeft',
+  'icon-arrow-right': 'ArrowRight',
+  'icon-frisbee': 'Frisbee',
+  'icon-tennis': 'Tennis',
+  'icon-badminton': 'Badminton',
+  'icon-volleyball': 'Volleyball',
+  'icon-baseball': 'Baseball',
+  'icon-football': 'Football',
+  'icon-soccer': 'Soccer',
+  'icon-basketball': 'Basketball'
+};
+Object.keys(iconMap).forEach(id => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.addEventListener('click', () => { 
+      const n = createItem(iconMap[id], 40 + Math.random()*60, 40 + Math.random()*60);
+      if (snapEnabled) snapToGrid(n);
+      pushHistory();
+    });
+  }
+});
+
+// --- Align & Group ---
+function selectionBox(els) {
+  const pr = court.getBoundingClientRect();
+  const rects = els.map(e => e.getBoundingClientRect());
+  const minX = Math.min(...rects.map(r=>r.left)) - pr.left;
+  const minY = Math.min(...rects.map(r=>r.top)) - pr.top;
+  const maxX = Math.max(...rects.map(r=>r.right)) - pr.left;
+  const maxY = Math.max(...rects.map(r=>r.bottom)) - pr.top;
+  return {minX, minY, maxX, maxY, width: maxX - minX, height: maxY - minY};
+}
+document.getElementById('align-horizontal-btn').addEventListener('click', () => {
+  const s = getSelected(); if (s.length<2) return;
+  const box = selectionBox(s);
+  s.forEach(el => {
+    const h = el.getBoundingClientRect().height;
+    el.style.top = (box.minY + (box.height - h)/2) + 'px';
+  });
+  if (snapEnabled) s.forEach(snapToGrid);
+  pushHistory();
+});
+document.getElementById('align-vertical-btn').addEventListener('click', () => {
+  const s = getSelected(); if (s.length<2) return;
+  const box = selectionBox(s);
+  s.forEach(el => {
+    const w = el.getBoundingClientRect().width;
+    el.style.left = (box.minX + (box.width - w)/2) + 'px';
+  });
+  if (snapEnabled) s.forEach(snapToGrid);
+  pushHistory();
+});
+
+// simple grouping by adding data-group id
+document.getElementById('group-btn').addEventListener('click', () => {
+  const s = getSelected(); if (s.length<2) return;
+  const gid = 'g_' + Date.now();
+  s.forEach(el => el.dataset.group = gid);
+  pushHistory();
+});
+document.getElementById('ungroup-btn').addEventListener('click', () => {
+  getSelected().forEach(el => delete el.dataset.group);
+  pushHistory();
+});
+
+// --- Grid controls ---
+document.getElementById('toggle-grid-btn').addEventListener('click', (e) => {
+  snapEnabled = !snapEnabled;
+  e.target.textContent = snapEnabled ? 'Disable Grid Snap' : 'Enable Grid Snap';
+});
+document.getElementById('grid-size').addEventListener('change', (e) => {
+  setGridSize(parseInt(e.target.value, 10));
+  pushHistory();
+});
+
+// --- Export ---
+async function exportCanvasFromCourt() {
+  const dpr = Math.max(2, window.devicePixelRatio || 1);
+  return await html2canvas(document.getElementById('court-container'), {
+    backgroundColor: '#ffffff',
+    scale: dpr,
+    useCORS: true
+  });
+}
+document.getElementById('export-pdf-btn').addEventListener('click', async () => {
+  const canvas = await exportCanvasFromCourt();
+  const img = canvas.toDataURL('image/png');
+  const pdf = new jspdf.jsPDF({ unit: 'pt', format: 'a4', orientation: 'portrait' });
+  const pageW = pdf.internal.pageSize.getWidth();
+  const pageH = pdf.internal.pageSize.getHeight();
+  const imgW = pageW;
+  const imgH = canvas.height * (imgW / canvas.width);
+  const y = Math.max(0, (pageH - imgH) / 2);
+  pdf.addImage(img, 'PNG', 0, y, imgW, imgH, '', 'FAST');
+  pdf.save('PEPlanner.pdf');
+});
+document.getElementById('export-png-btn').addEventListener('click', async () => {
+  const canvas = await exportCanvasFromCourt();
+  const link = document.createElement('a');
+  link.download = 'PEPlanner.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+});
+
+// --- Clear court ---
+document.getElementById('clear-court').addEventListener('click', () => {
+  clearSelection();
+  court.querySelectorAll('.item').forEach(el => el.remove());
+  pushHistory();
+});
+
+// --- Save/Load JSON ---
+document.getElementById('save-json-btn').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(serialize(), null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'peplanner-session.json'; a.click();
+  URL.revokeObjectURL(url);
+});
+document.getElementById('load-json-btn').addEventListener('change', (e) => {
+  const f = e.target.files?.[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try { deserialize(JSON.parse(reader.result)); pushHistory(); }
+    catch { alert('Invalid JSON file.'); }
+  };
+  reader.readAsText(f);
+  e.target.value = '';
+});
+
+// --- Keyboard shortcuts ---
+document.addEventListener('keydown', (e) => {
+  const mac = navigator.platform.toUpperCase().includes('MAC');
+  const mod = mac ? e.metaKey : e.ctrlKey;
+  if (mod && e.key.toLowerCase()==='z') { e.preventDefault(); undo(); return; }
+  if (mod && e.key.toLowerCase()==='y') { e.preventDefault(); redo(); return; }
+  const sel = getSelected();
+  if (e.key === 'Delete') {
+    sel.forEach(el => el.remove());
+    pushHistory();
+    e.preventDefault();
+  }
+  if (e.shiftKey && ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
+    const delta = 5;
+    sel.forEach(el => {
+      const dx = e.key==='ArrowLeft'?-delta:e.key==='ArrowRight'?delta:0;
+      const dy = e.key==='ArrowUp'?-delta:e.key==='ArrowDown'?delta:0;
+      el.style.left = (parseFloat(el.style.left||0)+dx)+'px';
+      el.style.top  = (parseFloat(el.style.top ||0)+dy)+'px';
+      if (snapEnabled) snapToGrid(el);
+    });
+    pushHistory();
+    e.preventDefault();
+  }
+  if (e.key.toLowerCase()==='r' && sel.length) {
+    sel.forEach(el => {
+      const curr = parseFloat(el.dataset.rotate || '0');
+      el.dataset.rotate = String((curr + 15) % 360);
+      el.style.transform = `rotate(${el.dataset.rotate}deg)`;
+    });
+    pushHistory();
+  }
+});
+
+// --- Init ---
+(function init() {
+  setGridSize(20);
+  // restore autosave
+  try {
+    const saved = localStorage.getItem('peplanner_autosave');
+    if (saved) deserialize(JSON.parse(saved));
+  } catch {}
+  pushHistory();
+  // deselect when clicking empty court
+  court.addEventListener('click', (e) => { if (e.target === court) clearSelection(); });
+})();
