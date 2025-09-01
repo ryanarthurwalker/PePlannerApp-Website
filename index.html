@@ -241,8 +241,12 @@
         </div>
         <div>
           <label class="tiny muted">Category</label>
-          <input id="g_category" list="categoryList" placeholder="e.g., Warm-up, Tag, Invasion" />
-          <datalist id="categoryList"></datalist>
+          <select id="g_category">
+            <option value="Warm-up">Warm-up</option>
+            <option value="Skill/Drill">Skill/Drill</option>
+            <option value="Game/Application">Game/Application</option>
+            <option value="Cool-down">Cool-down</option>
+          </select>
         </div>
       </div>
       <div class="row-3">
@@ -317,6 +321,8 @@
 <script>
 (() => {
   "use strict";
+
+  const CATS = ["Warm-up","Skill/Drill","Game/Application","Cool-down"];
 
   /* ========= Utilities ========= */
   const $ = (sel, root=document) => root.querySelector(sel);
@@ -402,7 +408,7 @@
   if (games.length === 0) {
     games = [
       {
-        id: uid(), title:'Sharks & Minnows', category:'Tag', minutes:8, age:'8-10', size:'10-30', equipment:'None',
+        id: uid(), title:'Sharks & Minnows', category:'Game/Application', minutes:8, age:'8-10', size:'10-30', equipment:'None',
         space:'Half court', setup:'Define two end zones.', rules:'Sharks tag minnows crossing the ocean.', safety:'No pushing; safe speed.',
         tags:['tag','agility','fun']
       },
@@ -412,7 +418,7 @@
         tags:['cardio','relay']
       },
       {
-        id: uid(), title:'Dribble Knockout', category:'Ball Skills', minutes:10, age:'11-13', size:'10-25', equipment:'1 ball per student',
+        id: uid(), title:'Dribble Knockout', category:'Skill/Drill', minutes:10, age:'11-13', size:'10-25', equipment:'1 ball per student',
         space:'Half court', setup:'Players dribble in area.', rules:'Protect your ball; knock others out.', safety:'Eyes up; no body contact.',
         tags:['dribbling','ball-control','awareness']
       }
@@ -454,19 +460,16 @@
       plans = Storage.loadPlans();
       const id = Storage.getCurrentPlanId();
       currentPlan = deepClone(plans.find(p=>p.id===id) || newPlan('My PE Lesson'));
-      this.populateCategoryList();
+      this.populateCategories();
       this.renderGameList();
       this.renderPlanner();
       this.populatePlansDropdown();
     },
-    populateCategoryList(){
-      const cats = Array.from(new Set(games.map(g=>g.category).filter(Boolean))).sort();
-      const dl = $('#categoryList');
-      dl.innerHTML = cats.map(c=>`<option>${escapeHTML(c)}</option>`).join('');
+    populateCategories(){
       const filterCat = $('#filterCat');
       const cur = filterCat.value;
-      filterCat.innerHTML = `<option value="">All Categories</option>` + cats.map(c=>`<option>${escapeHTML(c)}</option>`).join('');
-      filterCat.value = cur || '';
+      filterCat.innerHTML = `<option value="">All Categories</option>` + CATS.map(c=>`<option>${escapeHTML(c)}</option>`).join('');
+      filterCat.value = cur && CATS.includes(cur) ? cur : '';
     },
     renderGameList(){
       const q = $('#searchInput').value.trim().toLowerCase();
@@ -731,7 +734,7 @@
     $('#gameModalTitle').textContent = existing ? 'Edit Game' : 'New Game';
     $('#g_id').value = existing?.id || '';
     $('#g_title').value = existing?.title || '';
-    $('#g_category').value = existing?.category || '';
+    $('#g_category').value = CATS.includes(existing?.category) ? existing.category : CATS[0];
     $('#g_minutes').value = existing?.minutes ?? 5;
     $('#g_age').value = existing?.age || '';
     $('#g_size').value = existing?.size || '';
