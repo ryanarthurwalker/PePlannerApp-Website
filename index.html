@@ -1,69 +1,1007 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PE Planner (Icons on Diagram)</title>
-  <link rel="stylesheet" href="style.css">
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-  <script defer src="script.js"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PE Lesson Planner — Offline</title>
+<style>
+  :root{
+    --bg:#0f172a;
+    --panel:#111827;
+    --panel-2:#0b1220;
+    --muted:#94a3b8;
+    --text:#e5e7eb;
+    --accent:#22d3ee;
+    --accent-2:#34d399;
+    --danger:#fb7185;
+    --warn:#fbbf24;
+    --ok:#4ade80;
+    --chip:#1f2937;
+    --border:#1f2937;
+    --card:#0b1220;
+    --shadow: 0 8px 24px rgba(0,0,0,.35);
+    --radius: 12px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;background:linear-gradient(180deg,#0b1220 0%, #0a1020 60%, #0b1220 100%);
+    color:var(--text); font: 14px/1.35 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+  }
+  header{
+    position:sticky; top:0; z-index:5; backdrop-filter: blur(8px);
+    background:rgba(15,23,42,.7); border-bottom:1px solid var(--border);
+  }
+  .wrap{max-width:1300px; margin:0 auto; padding:18px 18px;}
+  h1{font-size:20px; margin:0; letter-spacing:.3px}
+  h2{font-size:16px; margin:0 0 10px}
+  .grid{
+    display:grid; grid-template-columns: 360px 1fr; gap:18px; align-items:start;
+    padding:18px; max-width:1300px; margin:0 auto;
+  }
+  .panel{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow)}
+  .panel .head{display:flex; align-items:center; justify-content:space-between; padding:14px 14px 10px; border-bottom:1px solid var(--border)}
+  .panel .body{padding:14px}
+  .muted{color:var(--muted)}
+  input, select, textarea{
+    width:100%; background:#0b1220; color:var(--text); border:1px solid var(--border);
+    border-radius:10px; padding:10px 12px; outline:none;
+  }
+  textarea{min-height:88px; resize:vertical}
+  .row{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
+  .row-3{display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px}
+  .btn{
+    background:linear-gradient(180deg,#1e293b,#0f172a); color:var(--text);
+    border:1px solid var(--border); padding:9px 12px; border-radius:10px; cursor:pointer;
+  }
+  .btn:hover{border-color:#2a3a55}
+  .btn.primary{background:linear-gradient(180deg,#0ea5e9,#0284c7); border-color:#0284c7}
+  .btn.success{background:linear-gradient(180deg,#10b981,#059669); border-color:#059669}
+  .btn.warn{background:linear-gradient(180deg,#f59e0b,#d97706); border-color:#d97706}
+  .btn.ghost{background:transparent}
+  .btn.danger{background:linear-gradient(180deg,#fb7185,#f43f5e); border-color:#f43f5e}
+  .btn.small{padding:6px 8px; font-size:12px; border-radius:8px}
+  .toolbar{display:flex; gap:8px; flex-wrap:wrap}
+  .search{display:flex; gap:8px}
+  .chips{display:flex; flex-wrap:wrap; gap:6px}
+  .chip{background:var(--chip); padding:6px 8px; border-radius:999px; border:1px solid var(--border); font-size:12px}
+  .list{display:grid; gap:10px}
+  .card{
+    background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px; display:grid; gap:8px;
+  }
+  .game-title{font-weight:700; font-size:15px}
+  .game-meta{display:flex; gap:8px; flex-wrap:wrap}
+  .meta-pill{background:#0b1220; border:1px dashed #2b364f; color:#cbd5e1; border-radius:999px; padding:3px 8px; font-size:11px}
+  .card .actions{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+  .tiny{font-size:11px}
+  .drag-hint{font-size:12px; color:#a3bffa}
+  .library-footer{display:flex; justify-content:space-between; align-items:center; padding-top:10px}
+  /* Planner */
+  .planner-meta{display:grid; gap:10px}
+  .blocks{display:grid; gap:12px}
+  .block{
+    background:var(--panel-2); border:1px solid var(--border); border-radius:12px; overflow:hidden;
+  }
+  .block-head{
+    display:flex; align-items:center; justify-content:space-between; gap:8px; padding:10px 12px; background:#0f172a; border-bottom:1px solid var(--border)
+  }
+  .block-title{display:flex; gap:8px; align-items:center}
+  .block-body{padding:10px 12px; display:grid; gap:8px; min-height:70px}
+  .dropzone{border:2px dashed #384766; border-radius:10px; padding:10px; text-align:center; color:#9fb4e3}
+  .dropzone.over{border-color:var(--accent); background:rgba(34,211,238,.06); color:#7fe9ff}
+  .item{
+    display:grid; grid-template-columns: 1fr 58px 76px 90px 30px; gap:8px; align-items:start;
+    background:#0b1220; border:1px solid var(--border); border-radius:10px; padding:8px;
+  }
+  .item .name{font-weight:600}
+  .item .notes{grid-column:1/-1}
+  .item .move{display:flex; flex-direction:column; gap:4px}
+  .progress{height:8px; background:#1f2937; border-radius:999px; overflow:hidden}
+  .progress > span{display:block; height:100%; background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+  .block-foot{padding:10px 12px; border-top:1px dashed var(--border); display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap}
+  .total{font-weight:700}
+  .planner-head{display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px}
+  .plan-actions{display:flex; gap:8px; flex-wrap:wrap}
+  /* Modal */
+  dialog{
+    border:none; border-radius:14px; width:min(780px, 96vw); background:var(--panel); color:var(--text);
+    box-shadow:var(--shadow);
+  }
+  dialog::backdrop{background:rgba(0,0,0,.5)}
+  .modal-head{display:flex; justify-content:space-between; align-items:center; padding:12px 14px; border-bottom:1px solid var(--border)}
+  .modal-body{padding:14px; display:grid; gap:10px}
+  .modal-actions{display:flex; gap:8px; justify-content:flex-end; padding:0 14px 14px}
+  .split{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
+  .hide{display:none}
+  /* Print */
+  @media print{
+    body{background:#fff; color:#111}
+    header, .grid > :first-child, .plan-actions, .nonprint, .dropzone, .item .move, .item .controls, .item .override{display:none !important}
+    .panel, .block, .card, .item{border-color:#ddd; box-shadow:none}
+    .planner{background:#fff}
+    .block-head{background:#f4f4f4; border-color:#ddd}
+    .item{grid-template-columns: 1fr 70px 1fr 1fr 1px}
+    .item .name{font-weight:700}
+    .item .mins, .item .equip{color:#333}
+    .item .notes{color:#333}
+    .progress{display:none}
+    .block-head .toolbar{ display:none !important; }
+  }
+</style>
 </head>
-<body class="bg-gray-100 p-6">
-  <main class="max-w-5xl mx-auto">
-    <section class="mb-4">
-      <label class="font-semibold mr-2" for="choose-court">Choose Court:</label>
-      <select id="choose-court" class="p-2 border rounded">
-        <option value="blank" selected>Blank</option>
-        <option value="basketball_half">Basketball – Half Court</option>
-        <option value="basketball_full">Basketball – Full Court</option>
-        <option value="soccer_field">Soccer Field</option>
-        <option value="volleyball_court">Volleyball Court</option>
-      </select>
-    </section>
+<body>
+<header>
+  <div class="wrap" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+    <div>
+      <h1>PE Lesson Planner <span class="muted tiny">— Offline • localStorage</span></h1>
+    </div>
+    <div class="toolbar nonprint">
+      <button class="btn small" id="backupAllBtn" title="Export your entire library + all plans to a file">Backup All (JSON)</button>
+      <label class="btn small">
+        Import JSON
+        <input type="file" id="importFile" accept=".json" class="hide" />
+      </label>
+      <button class="btn small danger" id="factoryResetBtn" title="Clear ALL data from this browser">Factory Reset</button>
+    </div>
+  </div>
+</header>
 
-    <section id="court-section" class="mb-6">
-      <h2 class="text-xl font-semibold mb-2">Court Diagram</h2>
-      <div id="court-container">
-        <div id="template-bg"></div>
-        <div id="grid-overlay"></div>
-        <div id="canvas-wrapper" tabindex="0"></div>
-        <div id="marquee" class="marquee hidden"></div>
+<main class="grid">
+  <!-- LIBRARY -->
+  <section class="panel" id="library">
+    <div class="head">
+      <h2>Game Library</h2>
+      <div class="toolbar nonprint">
+        <button id="newGameBtn" class="btn primary small">+ New Game</button>
       </div>
-    </section>
+    </div>
+    <div class="body">
+      <div class="search">
+        <input id="searchInput" placeholder="Search title, tags, text…" />
+        <select id="filterCat">
+          <option value="">All Categories</option>
+        </select>
+        <select id="filterAge">
+          <option value="">All Ages</option>
+          <option>Any</option><option>5-7</option><option>8-10</option><option>11-13</option><option>14+</option>
+        </select>
+      </div>
+      <div class="chips" id="activeFilters" style="margin-top:8px"></div>
+      <p class="drag-hint">Drag a game card into a block on the right, or use “Add to Block”.</p>
+      <div class="list" id="gameList"></div>
+      <div class="library-footer">
+        <span class="muted tiny" id="libCount">0 games</span>
+        <div class="toolbar nonprint">
+          <button id="exportLibBtn" class="btn small">Export Library (JSON)</button>
+          <button id="exportLibCsvBtn" class="btn small">CSV</button>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    <div id="grid-controls" class="flex flex-wrap items-center justify-center gap-4 mt-4">
-      <button id="toggle-grid-btn" class="px-4 py-2 bg-gray-600 text-white rounded">Enable Grid Snap</button>
-      <label for="grid-size" class="font-bold">Grid Size:</label>
-      <select id="grid-size" class="p-1 border rounded">
-        <option value="20" selected>20px</option>
-        <option value="40">40px</option>
-        <option value="60">60px</option>
-      </select>
-    </div>
+  <!-- PLANNER -->
+  <section class="panel planner" id="planner">
+    <div class="body">
+      <div class="planner-head">
+        <div style="display:grid; gap:6px">
+          <h2>Lesson Planner</h2>
+          <div class="planner-meta">
+            <div class="row">
+              <input id="planName" placeholder="Lesson name / theme (e.g., Ball Control — Grade 4)" />
+              <input id="planDate" type="date" />
+            </div>
+            <div class="row">
+              <input id="planClass" placeholder="Class / Group (e.g., Grade 4A, 30 students)" />
+              <input id="planTarget" type="number" min="0" placeholder="Target total minutes (e.g., 45)" />
+            </div>
+            <textarea id="planObjectives" placeholder="Learning objectives (e.g., dribbling with control, spatial awareness)"></textarea>
+          </div>
+        </div>
+        <div class="plan-actions nonprint">
+          <select id="plansDropdown" title="Saved plans"></select>
+          <button class="btn small success" id="savePlanBtn">💾 Save</button>
+          <button class="btn small" id="saveAsPlanBtn" title="Save as new">Save As…</button>
+          <button class="btn small" id="duplicatePlanBtn">Duplicate</button>
+          <button class="btn small danger" id="deletePlanBtn">Delete</button>
+          <div style="width:1px; background:#273247"></div>
+          <button class="btn small" id="exportPlanJsonBtn">Export Plan (JSON)</button>
+          <button class="btn small" id="downloadDocBtn">Download .DOC</button>
+          <button class="btn small" id="downloadHtmlBtn">Download .HTML</button>
+          <!-- NEW: text-only export buttons -->
+          <button class="btn small" id="downloadTxtBtn">Download .TXT</button>
+          <button class="btn small warn" id="printTextBtn">Print (Text)</button>
+          <!-- existing in-page print -->
+          <button class="btn small warn" id="printBtn">Print / Save PDF</button>
+        </div>
+      </div>
 
-    <p class="text-lg text-center mt-4 mb-2 font-semibold">Click an icon below to add to the diagram</p>
-    <div id="icon-row" class="flex justify-center gap-4 mt-4 flex-wrap">
-      <button id="icon-player" class="icon"><img src="assets/svg/player_icon.svg" class="w-10 h-10" alt=""></button>
-      <button id="icon-cone" class="icon"><img src="assets/svg/low_profile_cone.svg" class="w-10 h-10" alt=""></button>
-      <button id="icon-circle" class="icon"><img src="assets/svg/circle_icon.svg" class="w-10 h-10" alt=""></button>
-      <button id="icon-square" class="icon"><img src="assets/svg/square_icon.svg" class="w-10 h-10" alt=""></button>
-      <button id="icon-arrow-up" class="icon"><img src="assets/svg/arrow_sm_up_icon.svg" class="w-10 h-10" alt=""></button>
-      <button id="icon-arrow-down" class="icon"><img src="assets/svg/arrow_sm_down_icon.svg" class="w-10 h-10" alt=""></button>
-      <button id="icon-arrow-left" class="icon"><img src="assets/svg/arrow_sm_left_icon.svg" class="w-10 h-10" alt=""></button>
-      <button id="icon-arrow-right" class="icon"><img src="assets/svg/arrow_sm_right_icon.svg" class="w-10 h-10" alt=""></button>
+      <div class="blocks" id="blocks"></div>
+
+      <div class="nonprint" style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap">
+        <button class="btn primary" id="addBlockBtn">+ Add Block</button>
+        <button class="btn" id="resetBlocksBtn">Reset Blocks (Default)</button>
+        <span class="muted tiny" id="totalsLine"></span>
+      </div>
     </div>
-    <div id="icon-row-2" class="flex justify-center gap-4 mt-4 flex-wrap">
-      <button id="icon-frisbee" class="icon"><img src="assets/svg/frisbee_icon.svg" class="w-10 h-10" alt=""></button>
-      <button id="icon-tennis" class="icon"><img src="assets/svg/tennis_ball_icon.svg" class="w-10 h-10" alt=""></button>
-      <button id="icon-badminton" class="icon"><img src="assets/svg/badminton_icon.svg" class="w-10 h-10" alt=""></button>
-      <button id="icon-volleyball" class="icon"><img src="assets/svg/volleyball_icon.svg" class="w-10 h-10" alt=""></button>
-      <button id="icon-baseball" class="icon"><img src="assets/svg/baseball_icon.svg" class="w-10 h-10" alt=""></button>
-      <button id="icon-football" class="icon"><img src="assets/svg/american_football_icon.svg" class="w-10 h-10" alt=""></button>
-      <button id="icon-soccer" class="icon"><img src="assets/svg/football_icon.svg" class="w-10 h-10" alt=""></button>
-      <button id="icon-basketball" class="icon"><img src="assets/svg/basketball_icon.svg" class="w-10 h-10" alt=""></button>
+  </section>
+</main>
+
+<!-- GAME MODAL -->
+<dialog id="gameModal">
+  <form method="dialog" id="gameForm">
+    <div class="modal-head">
+      <h3 id="gameModalTitle">New Game</h3>
+      <button class="btn small ghost" type="button" id="closeGameModal">✕</button>
     </div>
-  </main>
+    <div class="modal-body">
+      <div class="row">
+        <div>
+          <label class="tiny muted">Title</label>
+          <input id="g_title" required placeholder="e.g., Sharks and Minnows" />
+        </div>
+        <div>
+          <label class="tiny muted">Category</label>
+          <input id="g_category" list="categoryList" placeholder="e.g., Warm-up, Tag, Invasion" />
+          <datalist id="categoryList"></datalist>
+        </div>
+      </div>
+      <div class="row-3">
+        <div>
+          <label class="tiny muted">Typical Minutes</label>
+          <input id="g_minutes" type="number" min="1" value="5" />
+        </div>
+        <div>
+          <label class="tiny muted">Age Group</label>
+          <input id="g_age" list="ageList" placeholder="Any / 5-7 / 8-10 / 11-13 / 14+" />
+          <datalist id="ageList">
+            <option>Any</option><option>5-7</option><option>8-10</option><option>11-13</option><option>14+</option>
+          </datalist>
+        </div>
+        <div>
+          <label class="tiny muted">Group Size</label>
+          <input id="g_size" placeholder="e.g., 10-30" />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label class="tiny muted">Equipment</label>
+          <input id="g_equipment" placeholder="e.g., 10 cones, 6 balls" />
+        </div>
+        <div>
+          <label class="tiny muted">Space</label>
+          <input id="g_space" placeholder="e.g., half court, open field" />
+        </div>
+      </div>
+      <div>
+        <label class="tiny muted">Setup</label>
+        <textarea id="g_setup" placeholder="How to set up the activity"></textarea>
+      </div>
+      <div>
+        <label class="tiny muted">Instructions / Rules</label>
+        <textarea id="g_rules" placeholder="Step-by-step rules"></textarea>
+      </div>
+      <div>
+        <label class="tiny muted">Safety / Differentiation</label>
+        <textarea id="g_safety" placeholder="Safety reminders, variations, extensions"></textarea>
+      </div>
+      <div>
+        <label class="tiny muted">Tags (comma separated)</label>
+        <input id="g_tags" placeholder="e.g., tag, cardio, dribbling" />
+      </div>
+      <input type="hidden" id="g_id" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn" value="cancel" type="button" id="cancelGameBtn">Cancel</button>
+      <button class="btn success" value="default" id="saveGameBtn">Save Game</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- SAVE-AS MODAL -->
+<dialog id="saveAsModal">
+  <form method="dialog" id="saveAsForm">
+    <div class="modal-head">
+      <h3>Save Plan As…</h3>
+      <button class="btn small ghost" type="button" id="closeSaveAsModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <input id="saveAsName" placeholder="New plan name" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn" type="button" id="cancelSaveAsBtn">Cancel</button>
+      <button class="btn success" id="confirmSaveAsBtn">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+(() => {
+  "use strict";
+
+  /* ========= Utilities ========= */
+  const $ = (sel, root=document) => root.querySelector(sel);
+  const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+  const escapeHTML = (s='') => s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const uid = () => 'id-' + crypto.getRandomValues(new Uint32Array(4)).join('');
+  const fmtMins = (n) => `${n||0} min`;
+  const byId = (id, arr) => arr.find(x=>x.id===id);
+  const download = (filename, mime, content) => {
+    const blob = new Blob([content], {type:mime});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 500);
+  }
+  const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+  const deepClone = (o) => JSON.parse(JSON.stringify(o));
+
+  /* ========= Storage Layer ========= */
+  const KEYS = {
+    games: 'pePlannerGames',
+    plans: 'pePlannerPlans',
+    current: 'pePlannerCurrentPlanId'
+  };
+  const Storage = {
+    loadGames(){ try {return JSON.parse(localStorage.getItem(KEYS.games) || '[]')} catch {return []} },
+    saveGames(list){ localStorage.setItem(KEYS.games, JSON.stringify(list)) },
+    loadPlans(){ try {return JSON.parse(localStorage.getItem(KEYS.plans) || '[]')} catch {return []} },
+    savePlans(list){ localStorage.setItem(KEYS.plans, JSON.stringify(list)) },
+    getCurrentPlanId(){ return localStorage.getItem(KEYS.current) },
+    setCurrentPlanId(id){ localStorage.setItem(KEYS.current, id) },
+    backupAll(){
+      const payload = {
+        _type: 'PE_PLANNER_BACKUP_V1',
+        exportedAt: new Date().toISOString(),
+        games: this.loadGames(),
+        plans: this.loadPlans(),
+        currentPlanId: this.getCurrentPlanId()
+      };
+      download(`pe-planner-backup-${new Date().toISOString().slice(0,10)}.json`,'application/json', JSON.stringify(payload, null, 2));
+    },
+    async importJSONFile(file){
+      const text = await file.text();
+      const data = JSON.parse(text);
+      if (Array.isArray(data)) {
+        const games = this.loadGames();
+        Storage.saveGames(mergeById(games, data));
+        alert('Imported games to library ✔️');
+      } else if (data && data._type === 'PE_PLANNER_BACKUP_V1') {
+        Storage.saveGames(data.games || []);
+        Storage.savePlans(data.plans || []);
+        if (data.currentPlanId) Storage.setCurrentPlanId(data.currentPlanId);
+        alert('Backup restored ✔️');
+      } else if (data && data._type === 'PE_PLANNER_PLAN_EXPORT_V1') {
+        const games = this.loadGames();
+        Storage.saveGames(mergeById(games, data.games || []));
+        const plans = this.loadPlans();
+        Storage.savePlans([...plans, data.plan]);
+        Storage.setCurrentPlanId(data.plan.id);
+        alert('Plan + games imported ✔️');
+      } else {
+        alert('Unknown JSON format ❓');
+      }
+      UI.refreshAll();
+    },
+    factoryReset(){
+      if (!confirm('This will permanently delete ALL games & plans stored in this browser. Continue?')) return;
+      localStorage.removeItem(KEYS.games);
+      localStorage.removeItem(KEYS.plans);
+      localStorage.removeItem(KEYS.current);
+      location.reload();
+    }
+  };
+  const mergeById = (existing, incoming) => {
+    const map = new Map(existing.map(g => [g.id, g]));
+    for (const item of incoming) map.set(item.id || uid(), {...item, id: item.id || uid()});
+    return Array.from(map.values());
+  };
+
+  /* ========= App State ========= */
+  let games = Storage.loadGames();
+  if (games.length === 0) {
+    games = [
+      {
+        id: uid(), title:'Sharks & Minnows', category:'Tag', minutes:8, age:'8-10', size:'10-30', equipment:'None',
+        space:'Half court', setup:'Define two end zones.', rules:'Sharks tag minnows crossing the ocean.', safety:'No pushing; safe speed.',
+        tags:['tag','agility','fun']
+      },
+      {
+        id: uid(), title:'Cone Relay', category:'Warm-up', minutes:6, age:'Any', size:'10-30', equipment:'10 cones',
+        space:'Gym', setup:'Split into teams; set cone at 10m.', rules:'Relay to cone and back; next goes.', safety:'Watch traffic; space teams.',
+        tags:['cardio','relay']
+      },
+      {
+        id: uid(), title:'Dribble Knockout', category:'Ball Skills', minutes:10, age:'11-13', size:'10-25', equipment:'1 ball per student',
+        space:'Half court', setup:'Players dribble in area.', rules:'Protect your ball; knock others out.', safety:'Eyes up; no body contact.',
+        tags:['dribbling','ball-control','awareness']
+      }
+    ];
+    localStorage.setItem(KEYS.games, JSON.stringify(games));
+  }
+  let plans = Storage.loadPlans();
+
+  const defaultBlocks = () => ([
+    { id: uid(), title:'Warm-up', target:5, items:[] },
+    { id: uid(), title:'Skill/Drill', target:20, items:[] },
+    { id: uid(), title:'Game/Application', target:15, items:[] },
+    { id: uid(), title:'Cool-down', target:5, items:[] },
+  ]);
+  const newPlan = (name='Untitled Lesson') => ({
+    id: uid(),
+    name, date: '', group:'', targetTotal: 45, objectives:'',
+    blocks: defaultBlocks()
+  });
+
+  let currentPlan = null;
+  const ensureCurrentPlan = () => {
+    const savedId = Storage.getCurrentPlanId();
+    if (savedId) {
+      const found = plans.find(p=>p.id===savedId);
+      if (found) { currentPlan = deepClone(found); return; }
+    }
+    currentPlan = newPlan('My PE Lesson');
+    plans.push(deepClone(currentPlan));
+    Storage.savePlans(plans);
+    Storage.setCurrentPlanId(currentPlan.id);
+  };
+  ensureCurrentPlan();
+
+  /* ========= UI Rendering ========= */
+  const UI = {
+    refreshAll(){
+      games = Storage.loadGames();
+      plans = Storage.loadPlans();
+      const id = Storage.getCurrentPlanId();
+      currentPlan = deepClone(plans.find(p=>p.id===id) || newPlan('My PE Lesson'));
+      this.populateCategoryList();
+      this.renderGameList();
+      this.renderPlanner();
+      this.populatePlansDropdown();
+    },
+    populateCategoryList(){
+      const cats = Array.from(new Set(games.map(g=>g.category).filter(Boolean))).sort();
+      const dl = $('#categoryList');
+      dl.innerHTML = cats.map(c=>`<option>${escapeHTML(c)}</option>`).join('');
+      const filterCat = $('#filterCat');
+      const cur = filterCat.value;
+      filterCat.innerHTML = `<option value="">All Categories</option>` + cats.map(c=>`<option>${escapeHTML(c)}</option>`).join('');
+      filterCat.value = cur || '';
+    },
+    renderGameList(){
+      const q = $('#searchInput').value.trim().toLowerCase();
+      const cat = $('#filterCat').value;
+      const age = $('#filterAge').value;
+      const list = $('#gameList');
+      const filtered = games.filter(g=>{
+        const hay = (g.title+' '+(g.category||'')+' '+(g.tags||[]).join(' ')+' '+(g.rules||'')+' '+(g.setup||'')+' '+(g.equipment||'')).toLowerCase();
+        const okQ = !q || hay.includes(q);
+        const okC = !cat || (g.category||'') === cat;
+        const okA = !age || (g.age||'') === age;
+        return okQ && okC && okA;
+      });
+      $('#libCount').textContent = `${filtered.length} game${filtered.length===1?'':'s'}`;
+      list.innerHTML = filtered.map(gameCardHTML).join('') || `<div class="muted">No games yet. Click “+ New Game”.</div>`;
+      filtered.forEach(g=>{
+        const card = $(`[data-game-id="${g.id}"]`);
+        attachGameCardEvents(card, g);
+      });
+    },
+    renderPlanner(){
+      $('#planName').value = currentPlan.name || '';
+      $('#planDate').value = currentPlan.date || '';
+      $('#planClass').value = currentPlan.group || '';
+      $('#planTarget').value = currentPlan.targetTotal || '';
+      $('#planObjectives').value = currentPlan.objectives || '';
+
+      const cont = $('#blocks');
+      cont.innerHTML = '';
+      currentPlan.blocks.forEach((b, bi) => {
+        const el = document.createElement('div');
+        el.className = 'block';
+        el.dataset.blockId = b.id;
+        el.innerHTML = blockHTML(b, bi);
+        cont.appendChild(el);
+
+        // block controls
+        $('.rename', el).addEventListener('click', () => {
+          const name = prompt('Block title', b.title);
+          if (name!=null){ b.title = name.trim() || b.title; saveAndRefreshPlan(); }
+        });
+        $('.delete', el).addEventListener('click', () => {
+          if (!confirm('Delete block?')) return;
+          currentPlan.blocks = currentPlan.blocks.filter(x=>x.id!==b.id);
+          saveAndRefreshPlan();
+        });
+        $('.up', el).addEventListener('click', () => {
+          const idx=currentPlan.blocks.findIndex(x=>x.id===b.id);
+          if(idx>0){ const t=currentPlan.blocks[idx-1]; currentPlan.blocks[idx-1]=currentPlan.blocks[idx]; currentPlan.blocks[idx]=t; saveAndRefreshPlan(); }
+        });
+        $('.down', el).addEventListener('click', () => {
+          const idx=currentPlan.blocks.findIndex(x=>x.id===b.id);
+          if(idx<currentPlan.blocks.length-1){ const t=currentPlan.blocks[idx+1]; currentPlan.blocks[idx+1]=currentPlan.blocks[idx]; currentPlan.blocks[idx]=t; saveAndRefreshPlan(); }
+        });
+        $('.target', el).addEventListener('input', (e)=>{ b.target = clamp(parseInt(e.target.value||0),0,999); updateTotals(); Storage.savePlans(replacePlanInList(plans, currentPlan)); });
+
+        // items list
+        const itemsWrap = $('.items', el);
+        itemsWrap.innerHTML = b.items.map((it, ii) => itemHTML(b, it, ii)).join('') || `<div class="dropzone">Drop games here</div>`;
+        b.items.forEach((it, ii) => attachItemEvents(el, b, it, ii));
+
+        // add drop handlers AFTER the dropzone exists
+        const dz = $('.dropzone', el);
+        if (dz) addDropHandlers(dz, b.id);
+      });
+
+      updateTotals();
+    },
+    populatePlansDropdown(){
+      const dd = $('#plansDropdown');
+      const opts = plans.map(p=>`<option value="${p.id}">${escapeHTML(p.name)}</option>`).join('');
+      dd.innerHTML = opts;
+      dd.value = currentPlan.id;
+    }
+  };
+
+  /* ========= HTML Builders ========= */
+  function gameCardHTML(g){
+    const tags = (g.tags||[]).map(t=>`<span class="chip tiny">${escapeHTML(t)}</span>`).join(' ');
+    const cat = g.category ? `<span class="meta-pill">#${escapeHTML(g.category)}</span>` : '';
+    const age = g.age ? `<span class="meta-pill">Age: ${escapeHTML(g.age)}</span>` : '';
+    const mins = g.minutes ? `<span class="meta-pill">⏱ ${fmtMins(g.minutes)}</span>` : '';
+    return `
+      <div class="card" draggable="true" data-game-id="${g.id}">
+        <div class="game-title">${escapeHTML(g.title)}</div>
+        <div class="game-meta">${cat} ${age} ${mins}</div>
+        ${g.equipment ? `<div class="tiny muted">Equip: ${escapeHTML(g.equipment)}</div>`:''}
+        <div class="chips">${tags}</div>
+        <div class="actions">
+          <select class="small addToSelect">
+            <option value="">Add to Block…</option>
+            ${currentPlan.blocks.map(b=>`<option value="${b.id}">${escapeHTML(b.title)}</option>`).join('')}
+          </select>
+          <button class="btn small" data-act="view">View</button>
+          <button class="btn small" data-act="edit">Edit</button>
+          <button class="btn small danger" data-act="del">Delete</button>
+        </div>
+        <div class="tiny muted">Drag this card into a block ➜</div>
+      </div>
+    `;
+  }
+  function blockHTML(b){
+    const {sum, target} = blockTotals(b);
+    const pct = target ? clamp(Math.round(sum/target*100),0,100) : 0;
+    return `
+      <div class="block-head">
+        <div class="block-title"><strong>${escapeHTML(b.title)}</strong>
+          <span class="tiny muted">(${sum} / ${target||0} min)</span>
+        </div>
+        <div class="toolbar">
+          <label class="tiny muted">Target</label>
+          <input class="target" type="number" min="0" value="${b.target||0}" style="width:80px" />
+          <button class="btn small up" title="Move up">↑</button>
+          <button class="btn small down" title="Move down">↓</button>
+          <button class="btn small rename" title="Rename">Rename</button>
+          <button class="btn small danger delete" title="Delete block">Delete</button>
+        </div>
+      </div>
+      <div class="block-body">
+        <div class="items"></div>
+      </div>
+      <div class="block-foot">
+        <div class="progress" style="flex:1"><span style="width:${pct}%"></span></div>
+        <div class="total">${sum} min</div>
+      </div>
+    `;
+  }
+  function itemHTML(block, it, index){
+    const g = byId(it.gameId, games) || it._game;
+    const title = g ? g.title : '(Missing Game)';
+    const equip = g?.equipment ? `Equip: ${escapeHTML(g.equipment)}` : '';
+    const mins = it.mins ?? g?.minutes ?? 0;
+    return `
+      <div class="item" data-item-index="${index}">
+        <div class="name">${escapeHTML(title)} <div class="tiny muted">${escapeHTML(g?.category||'')}</div></div>
+        <div class="mins">${fmtMins(mins)}</div>
+        <div class="override"><input type="number" min="1" value="${mins}" class="ovrMins" title="Override minutes"></div>
+        <div class="equip tiny muted">${escapeHTML(equip)}</div>
+        <div class="controls">
+          <button class="btn small danger delItem" title="Remove">✕</button>
+        </div>
+        <div class="notes hide"></div>
+        <div class="move">
+          <button class="btn small upItem">↑</button>
+          <button class="btn small downItem">↓</button>
+        </div>
+      </div>
+    `;
+  }
+
+  /* ========= Event Wiring ========= */
+  function attachGameCardEvents(card, g){
+    // Drag
+    card.addEventListener('dragstart', (e)=>{
+      e.dataTransfer.setData('text/plain', JSON.stringify({type:'game', id:g.id}));
+      e.dataTransfer.effectAllowed = 'copy';
+    });
+    // Actions
+    card.querySelector('[data-act="edit"]').addEventListener('click', ()=> openGameModal(g));
+    card.querySelector('[data-act="del"]').addEventListener('click', ()=> {
+      if (!confirm(`Delete "${g.title}" from library? This won't remove it from existing plans.`)) return;
+      games = games.filter(x=>x.id!==g.id);
+      Storage.saveGames(games);
+      UI.refreshAll();
+    });
+    card.querySelector('[data-act="view"]').addEventListener('click', ()=> viewGame(g));
+    // Add to Block select
+    const sel = card.querySelector('.addToSelect');
+    sel.addEventListener('change', (e)=>{
+      const blockId = e.target.value;
+      if (!blockId) return;
+      addGameToBlock(blockId, g.id);
+      e.target.value = '';
+    });
+  }
+  function addDropHandlers(zone, blockId){
+    zone.addEventListener('dragover', e=>{
+      const t = e.dataTransfer.types;
+      if (t.includes('text/plain')) { e.preventDefault(); zone.classList.add('over'); }
+    });
+    zone.addEventListener('dragleave', ()=> zone.classList.remove('over'));
+    zone.addEventListener('drop', e=>{
+      e.preventDefault();
+      zone.classList.remove('over');
+      try {
+        const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+        if (data.type==='game') addGameToBlock(blockId, data.id);
+      } catch {}
+    });
+  }
+  function attachItemEvents(blockEl, block, it, idx){
+    const row = blockEl.querySelector(`[data-item-index="${idx}"]`);
+    row.querySelector('.delItem').addEventListener('click', ()=>{
+      block.items.splice(idx,1);
+      saveAndRefreshPlan();
+    });
+    row.querySelector('.ovrMins').addEventListener('input', (e)=>{
+      const v = clamp(parseInt(e.target.value||0), 1, 999);
+      it.mins = v;
+      saveAndRefreshPlan(false);
+    });
+    row.querySelector('.upItem').addEventListener('click', ()=>{
+      if (idx>0){ const t=block.items[idx-1]; block.items[idx-1]=block.items[idx]; block.items[idx]=t; saveAndRefreshPlan(); }
+    });
+    row.querySelector('.downItem').addEventListener('click', ()=>{
+      if (idx<block.items.length-1){ const t=block.items[idx+1]; block.items[idx+1]=block.items[idx]; block.items[idx]=t; saveAndRefreshPlan(); }
+    });
+  }
+
+  /* ========= Calculations & Updates ========= */
+  function blockTotals(b){
+    const sum = (b.items||[]).reduce((a,it)=>{
+      const g = byId(it.gameId, games) || it._game;
+      const m = it.mins ?? g?.minutes ?? 0;
+      return a + (parseInt(m)||0);
+    },0);
+    return {sum, target: b.target||0};
+  }
+  function planTotals(){
+    const totals = currentPlan.blocks.map(blockTotals);
+    const sum = totals.reduce((a,t)=>a+t.sum,0);
+    const target = parseInt(currentPlan.targetTotal||0) || totals.reduce((a,t)=>a+t.target,0);
+    return {sum, target};
+  }
+  function updateTotals(){
+    $$('#blocks .block').forEach((el,i)=>{
+      const bId = el.dataset.blockId;
+      const b = currentPlan.blocks.find(x=>x.id===bId);
+      const {sum, target} = blockTotals(b);
+      $('.block-title .tiny', el).textContent = `(${sum} / ${target||0} min)`;
+      $('.block-foot .total', el).textContent = `${sum} min`;
+      const pct = target ? clamp(Math.round(sum/target*100),0,100) : 0;
+      $('.progress span', el).style.width = pct+'%';
+    });
+    const t = planTotals();
+    $('#totalsLine').textContent = `Total: ${t.sum} min` + (t.target?` • Target: ${t.target} min`:'');
+  }
+  function addGameToBlock(blockId, gameId){
+    const block = currentPlan.blocks.find(b=>b.id===blockId);
+    if (!block) return;
+    block.items.push({gameId, mins: byId(gameId, games)?.minutes || 5});
+    saveAndRefreshPlan();
+  }
+
+  /* ========= Planner Actions ========= */
+  function replacePlanInList(list, plan){
+    const idx = list.findIndex(p=>p.id===plan.id);
+    if (idx>=0) list[idx] = deepClone(plan); else list.push(deepClone(plan));
+    return list;
+  }
+  function saveAndRefreshPlan(hard=true){
+    plans = replacePlanInList(plans, currentPlan);
+    Storage.savePlans(plans);
+    Storage.setCurrentPlanId(currentPlan.id);
+    if (hard) UI.renderPlanner(); else updateTotals();
+    UI.populatePlansDropdown();
+  }
+
+  /* ========= Game Modal Logic ========= */
+  const gameModal = $('#gameModal');
+  function openGameModal(existing=null){
+    $('#gameModalTitle').textContent = existing ? 'Edit Game' : 'New Game';
+    $('#g_id').value = existing?.id || '';
+    $('#g_title').value = existing?.title || '';
+    $('#g_category').value = existing?.category || '';
+    $('#g_minutes').value = existing?.minutes ?? 5;
+    $('#g_age').value = existing?.age || '';
+    $('#g_size').value = existing?.size || '';
+    $('#g_equipment').value = existing?.equipment || '';
+    $('#g_space').value = existing?.space || '';
+    $('#g_setup').value = existing?.setup || '';
+    $('#g_rules').value = existing?.rules || '';
+    $('#g_safety').value = existing?.safety || '';
+    $('#g_tags').value = (existing?.tags||[]).join(', ');
+    gameModal.showModal();
+  }
+  function closeGameModal(){ gameModal.close(); }
+  function viewGame(g){
+    const pretty = `
+Title: ${g.title}
+Category: ${g.category||''}   Minutes: ${g.minutes||''}   Age: ${g.age||''}
+Group Size: ${g.size||''}
+Equipment: ${g.equipment||''}
+Space: ${g.space||''}
+
+Setup:
+${g.setup||''}
+
+Instructions:
+${g.rules||''}
+
+Safety / Differentiation:
+${g.safety||''}
+
+Tags: ${(g.tags||[]).join(', ')}
+    `.trim();
+    alert(pretty);
+  }
+  function submitGameForm(){
+    const id = $('#g_id').value || uid();
+    const game = {
+      id,
+      title: $('#g_title').value.trim(),
+      category: $('#g_category').value.trim(),
+      minutes: parseInt($('#g_minutes').value||5),
+      age: $('#g_age').value.trim(),
+      size: $('#g_size').value.trim(),
+      equipment: $('#g_equipment').value.trim(),
+      space: $('#g_space').value.trim(),
+      setup: $('#g_setup').value.trim(),
+      rules: $('#g_rules').value.trim(),
+      safety: $('#g_safety').value.trim(),
+      tags: $('#g_tags').value.split(',').map(s=>s.trim()).filter(Boolean)
+    };
+    if (!game.title) { alert('Please enter a title'); return; }
+    const idx = games.findIndex(x=>x.id===id);
+    if (idx>=0) games[idx] = game; else games.push(game);
+    Storage.saveGames(games);
+    UI.refreshAll();
+    closeGameModal();
+  }
+
+  /* ========= Export / Print ========= */
+
+  // NEW: generate plain text
+  function generatePlainText(){
+    const plan = JSON.parse(JSON.stringify(currentPlan));
+    const resolve = (id)=> games.find(g=>g.id===id);
+
+    const totals = planTotals();
+    const lines = [];
+
+    lines.push(`${plan.name || 'Lesson Plan'}`);
+    lines.push(`Date: ${plan.date || ''}`);
+    lines.push(`Group: ${plan.group || ''}`);
+    lines.push(`Total: ${totals.sum} min${totals.target ? ` (target ${totals.target} min)` : ''}`);
+    lines.push('');
+
+    if ((plan.objectives || '').trim()){
+      lines.push('Objectives');
+      lines.push('----------');
+      lines.push(plan.objectives.trim());
+      lines.push('');
+    }
+
+    for (const b of plan.blocks){
+      const blockMinutes = (b.items||[]).reduce((a,it)=>{
+        const g = resolve(it.gameId) || it._game || {};
+        const m = it.mins ?? g.minutes ?? 0;
+        return a + (parseInt(m)||0);
+      }, 0);
+
+      lines.push(`${b.title} — ${blockMinutes} min`);
+      if (b.items?.length){
+        for (const it of b.items){
+          const g = resolve(it.gameId) || it._game || {};
+          const mins = it.mins ?? g.minutes ?? '';
+          const cat  = g.category ? ` (${g.category})` : '';
+          const equip = g.equipment ? ` [Equip: ${g.equipment}]` : '';
+          lines.push(`  - ${g.title || '(Missing)'} — ${mins} min${cat}${equip}`);
+        }
+      } else {
+        lines.push('  (no items)');
+      }
+      lines.push('');
+    }
+
+    return lines.join('\n');
+  }
+
+  // REPLACED: minimal printable HTML that just wraps the plain text
+  function generatePrintableHTML(){
+    const text = generatePlainText();
+    const styles = `
+      body{ margin:24px; }
+      pre{ white-space:pre-wrap; font: 12pt/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+      @media print{ body{ margin:16px } }
+    `;
+    return `<!doctype html><meta charset="utf-8">
+    <title>${escapeHTML(currentPlan.name||'Lesson Plan')}</title>
+    <style>${styles}</style>
+    <pre>${escapeHTML(text)}</pre>`;
+  }
+
+  function planPortableExport() {
+    const usedIds = new Set(currentPlan.blocks.flatMap(b=>b.items.map(it=>it.gameId)));
+    const usedGames = games.filter(g=>usedIds.has(g.id));
+    return {
+      _type: 'PE_PLANNER_PLAN_EXPORT_V1',
+      exportedAt: new Date().toISOString(),
+      plan: deepClone(currentPlan),
+      games: usedGames
+    };
+  }
+
+  function gamesToCSV(list){
+    const header = ['id','title','category','minutes','age','size','equipment','space','setup','rules','safety','tags'].join(',');
+    const rows = list.map(g=>{
+      const vals = [
+        g.id, g.title, g.category||'', g.minutes||'', g.age||'', g.size||'', g.equipment||'', g.space||'',
+        (g.setup||'').replace(/\n/g,' '),
+        (g.rules||'').replace(/\n/g,' '),
+        (g.safety||'').replace(/\n/g,' '),
+        (g.tags||[]).join('|')
+      ].map(v => `"${String(v).replace(/"/g,'""')}"`);
+      return vals.join(',');
+    });
+    return [header, ...rows].join('\n');
+  }
+
+  /* ========= Event Listeners (global) ========= */
+
+  // Library search/filter
+  $('#searchInput').addEventListener('input', ()=> UI.renderGameList());
+  $('#filterCat').addEventListener('change', ()=> UI.renderGameList());
+  $('#filterAge').addEventListener('change', ()=> UI.renderGameList());
+
+  // New Game
+  $('#newGameBtn').addEventListener('click', ()=> openGameModal());
+  $('#closeGameModal').addEventListener('click', closeGameModal);
+  $('#cancelGameBtn').addEventListener('click', closeGameModal);
+  $('#saveGameBtn').addEventListener('click', (e)=>{ e.preventDefault(); submitGameForm(); });
+
+  // Planner meta
+  $('#planName').addEventListener('input', e=>{ currentPlan.name = e.target.value; saveAndRefreshPlan(false); });
+  $('#planDate').addEventListener('input', e=>{ currentPlan.date = e.target.value; saveAndRefreshPlan(false); });
+  $('#planClass').addEventListener('input', e=>{ currentPlan.group = e.target.value; saveAndRefreshPlan(false); });
+  $('#planTarget').addEventListener('input', e=>{ currentPlan.targetTotal = clamp(parseInt(e.target.value||0),0,999); saveAndRefreshPlan(false); updateTotals(); });
+  $('#planObjectives').addEventListener('input', e=>{ currentPlan.objectives = e.target.value; saveAndRefreshPlan(false); });
+
+  // Blocks management
+  $('#addBlockBtn').addEventListener('click', ()=>{
+    const name = prompt('Block title', 'New Block');
+    if (!name) return;
+    const target = parseInt(prompt('Target minutes for this block (optional)', '10')||'') || 0;
+    currentPlan.blocks.push({id:uid(), title:name.trim(), target, items:[]});
+    saveAndRefreshPlan();
+  });
+  $('#resetBlocksBtn').addEventListener('click', ()=>{
+    if (!confirm('Reset blocks to default? This won’t delete your games.')) return;
+    currentPlan.blocks = defaultBlocks();
+    saveAndRefreshPlan();
+  });
+
+  // Plans dropdown & actions
+  $('#plansDropdown').addEventListener('change', (e)=>{
+    const id = e.target.value;
+    const plan = plans.find(p=>p.id===id);
+    if (plan){ currentPlan = deepClone(plan); Storage.setCurrentPlanId(plan.id); UI.renderPlanner(); }
+  });
+  $('#savePlanBtn').addEventListener('click', ()=> saveAndRefreshPlan());
+  $('#saveAsPlanBtn').addEventListener('click', ()=>{
+    $('#saveAsName').value = (currentPlan.name || '') + ' (copy)';
+    $('#saveAsModal').showModal();
+  });
+  $('#closeSaveAsModal').addEventListener('click', ()=> $('#saveAsModal').close());
+  $('#cancelSaveAsBtn').addEventListener('click', ()=> $('#saveAsModal').close());
+  $('#confirmSaveAsBtn').addEventListener('click', (e)=>{
+    e.preventDefault();
+    const name = $('#saveAsName').value.trim() || (currentPlan.name + ' (copy)');
+    const copy = deepClone(currentPlan);
+    copy.id = uid(); copy.name = name;
+    plans.push(copy);
+    Storage.savePlans(plans);
+    Storage.setCurrentPlanId(copy.id);
+    UI.refreshAll();
+    $('#saveAsModal').close();
+  });
+  $('#duplicatePlanBtn').addEventListener('click', ()=>{
+    const copy = deepClone(currentPlan);
+    copy.id = uid(); copy.name = (copy.name||'Lesson') + ' (duplicate)';
+    plans.push(copy);
+    Storage.savePlans(plans);
+    Storage.setCurrentPlanId(copy.id);
+    UI.refreshAll();
+  });
+  $('#deletePlanBtn').addEventListener('click', ()=>{
+    if (!confirm('Delete this plan?')) return;
+    plans = plans.filter(p=>p.id!==currentPlan.id);
+    Storage.savePlans(plans);
+    if (plans.length===0){ const np=newPlan('My PE Lesson'); plans.push(np); Storage.savePlans(plans); Storage.setCurrentPlanId(np.id); }
+    else Storage.setCurrentPlanId(plans[0].id);
+    UI.refreshAll();
+  });
+
+  // Export / Print (existing)
+  $('#printBtn').addEventListener('click', ()=> window.print());
+  $('#downloadDocBtn').addEventListener('click', ()=>{
+    const html = generatePrintableHTML();
+    download(`${sanitizeFileName(currentPlan.name||'Lesson')}.doc`, 'application/msword', html);
+  });
+  $('#downloadHtmlBtn').addEventListener('click', ()=>{
+    const html = generatePrintableHTML();
+    download(`${sanitizeFileName(currentPlan.name||'Lesson')}.html`, 'text/html', html);
+  });
+  $('#exportPlanJsonBtn').addEventListener('click', ()=>{
+    const data = planPortableExport();
+    download(`${sanitizeFileName(currentPlan.name||'Lesson')}.json`, 'application/json', JSON.stringify(data, null, 2));
+  });
+
+  // NEW: Plain text download & print
+  document.getElementById('downloadTxtBtn')?.addEventListener('click', ()=>{
+    const txt = generatePlainText();
+    download(`${sanitizeFileName(currentPlan.name||'Lesson')}.txt`, 'text/plain', txt);
+  });
+  document.getElementById('printTextBtn')?.addEventListener('click', ()=>{
+    const html = generatePrintableHTML();
+    const w = window.open('', '_blank');
+    w.document.open();
+    w.document.write(html + '<script>window.onload=()=>window.print()<\\/script>');
+    w.document.close();
+  });
+
+  // Library export/import
+  $('#exportLibBtn').addEventListener('click', ()=> {
+    download(`pe-games-library.json`, 'application/json', JSON.stringify(games, null, 2));
+  });
+  $('#exportLibCsvBtn').addEventListener('click', ()=> {
+    download(`pe-games-library.csv`, 'text/csv', gamesToCSV(games));
+  });
+  $('#backupAllBtn').addEventListener('click', ()=> Storage.backupAll());
+  $('#importFile').addEventListener('change', (e)=>{
+    const f = e.target.files[0]; if (f) Storage.importJSONFile(f);
+    e.target.value = '';
+  });
+
+  // Danger zone
+  $('#factoryResetBtn').addEventListener('click', ()=> Storage.factoryReset());
+
+  function sanitizeFileName(s){ return (s||'file').replace(/[^\w\d\-_. ]+/g,'_').slice(0,60); }
+
+  /* ========= Init ========= */
+  UI.refreshAll();
+
+})();
+</script>
 </body>
 </html>
