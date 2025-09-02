@@ -526,6 +526,14 @@
         });
         $('.target', el).addEventListener('input', (e)=>{ b.target = clamp(parseInt(e.target.value||0),0,999); updateTotals(); Storage.savePlans(replacePlanInList(plans, currentPlan)); });
 
+        // one-click filter to this block's category
+        $('.filterCatBtn', el).addEventListener('click', () => {
+          const cat = CATS.includes(b.title) ? b.title : '';
+        $('#filterCat').value = cat;
+          UI.renderGameList();
+          document.getElementById('library')?.scrollIntoView({behavior:'smooth', block:'start'});
+        });
+
         // items list
         const itemsWrap = $('.items', el);
         itemsWrap.innerHTML = b.items.map((it, ii) => itemHTML(b, it, ii)).join('') || `<div class="dropzone">Drop games here</div>`;
@@ -572,31 +580,32 @@
     `;
   }
   function blockHTML(b){
-    const {sum, target} = blockTotals(b);
-    const pct = target ? clamp(Math.round(sum/target*100),0,100) : 0;
-    return `
-      <div class="block-head">
-        <div class="block-title"><strong>${escapeHTML(b.title)}</strong>
-          <span class="tiny muted">(${sum} / ${target||0} min)</span>
-        </div>
-        <div class="toolbar">
-          <label class="tiny muted">Target</label>
-          <input class="target" type="number" min="0" value="${b.target||0}" style="width:80px" />
-          <button class="btn small up" title="Move up">↑</button>
-          <button class="btn small down" title="Move down">↓</button>
-          <button class="btn small rename" title="Rename">Rename</button>
-          <button class="btn small danger delete" title="Delete block">Delete</button>
-        </div>
+  const {sum, target} = blockTotals(b);
+  const pct = target ? clamp(Math.round(sum/target*100),0,100) : 0;
+  return `
+    <div class="block-head">
+      <div class="block-title"><strong>${escapeHTML(b.title)}</strong>
+        <span class="tiny muted">(${sum} / ${target||0} min)</span>
       </div>
-      <div class="block-body">
-        <div class="items"></div>
+      <div class="toolbar">
+        <button class="btn small filterCatBtn" title="Filter library to this block">Filter Library</button>
+        <label class="tiny muted">Target</label>
+        <input class="target" type="number" min="0" value="${b.target||0}" style="width:80px" />
+        <button class="btn small up" title="Move up">↑</button>
+        <button class="btn small down" title="Move down">↓</button>
+        <button class="btn small rename" title="Rename">Rename</button>
+        <button class="btn small danger delete" title="Delete block">Delete</button>
       </div>
-      <div class="block-foot">
-        <div class="progress" style="flex:1"><span style="width:${pct}%"></span></div>
-        <div class="total">${sum} min</div>
-      </div>
-    `;
-  }
+    </div>
+    <div class="block-body">
+      <div class="items"></div>
+    </div>
+    <div class="block-foot">
+      <div class="progress" style="flex:1"><span style="width:${pct}%"></span></div>
+      <div class="total">${sum} min</div>
+    </div>
+  `;
+}
   function itemHTML(block, it, index){
     const g = byId(it.gameId, games) || it._game;
     const title = g ? g.title : '(Missing Game)';
